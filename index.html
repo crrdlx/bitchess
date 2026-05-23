@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitchess — Bitcoin vs Ethereum</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --btc: #F7931A;
+            --btc-dim: #7a4810;
+            --eth: #8A92B2;
+            --eth-dim: #3D3A8C;
+            --bg: #0A0A0B;
+            --bg2: #111114;
+            --bg3: #18181C;
+            --border: rgba(255, 255, 255, 0.07);
+            --text: #F0EEE8;
+            --text-dim: #888;
+            --mono: 'Space Mono', monospace;
+            --sans: 'Syne', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* GRAIN OVERLAY */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        /* GRID BG */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(247, 147, 26, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247, 147, 26, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: rgba(10, 10, 11, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: var(--mono);
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-logo .b {
+            color: var(--btc);
+        }
+
+        .nav-logo .e {
+            color: var(--eth);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .nav-cta {
+            background: var(--btc) !important;
+            color: #000 !important;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            transition: opacity 0.2s !important;
+        }
+
+        .nav-cta:hover {
+            opacity: 0.85;
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px 60px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-glow-btc {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(247, 147, 26, 0.12) 0%, transparent 70%);
+            top: 50%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .hero-glow-eth {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(138, 146, 178, 0.10) 0%, transparent 70%);
+            top: 50%;
+            left: 80%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .hero-eyebrow {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--btc);
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.1s forwards;
+        }
+
+        .hero-title {
+            font-size: clamp(56px, 10vw, 110px);
+            font-weight: 800;
+            line-height: 0.95;
+            letter-spacing: -3px;
+            margin-bottom: 8px;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.2s forwards;
+        }
+
+        .hero-title .bit {
+            color: var(--btc);
+        }
+
+        .hero-title .chess {
+            color: var(--text);
+        }
+
+        .hero-sub {
+            font-family: var(--mono);
+            font-size: clamp(13px, 2vw, 16px);
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.35s forwards;
+        }
+
+        /* VS BADGE */
+        .vs-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 12px 28px;
+            margin-bottom: 52px;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.45s forwards;
+        }
+
+        .chain-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .chain-tag.btc {
+            color: var(--btc);
+        }
+
+        .chain-tag.eth {
+            color: var(--eth);
+        }
+
+        .chain-icon {
+            font-size: 22px;
+        }
+
+        .vs-sep {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+
+        /* CTA BUTTONS */
+        .hero-ctas {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeUp 0.6s 0.55s forwards;
+            margin-bottom: 80px;
+        }
+
+        .btn-primary {
+            background: var(--btc);
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.15s, opacity 0.15s;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 14px 32px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .btn-secondary:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* CHESS BOARD HERO VISUAL */
+        .mini-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: min(320px, 70vw);
+            border: 2px solid rgba(247, 147, 26, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.7s 0.65s forwards;
+            box-shadow: 0 0 60px rgba(247, 147, 26, 0.1), 0 0 120px rgba(138, 146, 178, 0.06);
+        }
+
+        .mc {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(14px, 4vw, 22px);
+        }
+
+        .mc.l {
+            background: rgba(240, 217, 181, 0.15);
+        }
+
+        .mc.d {
+            background: rgba(181, 136, 99, 0.2);
+        }
+
+        .mc.btc-hl {
+            background: rgba(247, 147, 26, 0.25) !important;
+        }
+
+        .mc.eth-hl {
+            background: rgba(138, 146, 178, 0.20) !important;
+        }
+
+        /* FEATURES */
+        .features {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .features-title {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .features-title span {
+            color: var(--btc);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .feat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            transition: border-color 0.25s, transform 0.2s;
+        }
+
+        .feat-card:hover {
+            border-color: rgba(247, 147, 26, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .feat-icon {
+            font-size: 28px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .feat-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .feat-desc {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.7;
+        }
+
+        /* HOW IT WORKS */
+        .how {
+            position: relative;
+            z-index: 1;
+            padding: 80px 24px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .how-title {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .how-title span {
+            color: var(--eth);
+        }
+
+        .how-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .how-step {
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            gap: 20px;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .how-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--btc);
+            background: rgba(247, 147, 26, 0.1);
+            border: 1px solid rgba(247, 147, 26, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            width: 36px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .step-desc {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.7;
+        }
+
+        .step-desc code {
+            background: var(--bg3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: var(--btc);
+            font-size: 11px;
+        }
+
+        /* HASH POLICY */
+        .hash-block {
+            position: relative;
+            z-index: 1;
+            margin: 0 auto 80px;
+            max-width: 760px;
+            padding: 0 24px;
+        }
+
+        .hash-card {
+            background: var(--bg2);
+            border: 1px solid rgba(247, 147, 26, 0.2);
+            border-radius: 12px;
+            padding: 28px 32px;
+        }
+
+        .hash-card-title {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--btc);
+            margin-bottom: 16px;
+        }
+
+        .hash-example {
+            font-family: var(--mono);
+            font-size: 13px;
+            word-break: break-all;
+            line-height: 2;
+            margin-bottom: 16px;
+        }
+
+        .hz {
+            opacity: 0.25;
+        }
+
+        .hs {
+            color: var(--btc);
+            font-weight: 700;
+        }
+
+        .hash-note {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.8;
+        }
+
+        .hash-note strong {
+            color: var(--text);
+        }
+
+        /* FOOTER */
+        footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid var(--border);
+            padding: 32px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-logo {
+            font-family: var(--mono);
+            font-weight: 700;
+        }
+
+        .footer-logo .b {
+            color: var(--btc);
+        }
+
+        .footer-logo .e {
+            color: var(--eth);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 12px;
+            font-family: var(--mono);
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        .footer-credit {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .footer-credit a {
+            color: var(--btc);
+            text-decoration: none;
+        }
+
+        .footer-credit a:hover {
+            text-decoration: underline;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            nav {
+                padding: 12px 16px;
+            }
+
+            .nav-links {
+                gap: 14px;
+            }
+
+            footer {
+                padding: 24px 16px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero {
+                padding: 90px 16px 48px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-logo"><span class="b">bit</span><span class="e">chess</span></div>
+        <ul class="nav-links">
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#hash">Hash policy</a></li>
+            <li><a href="game.html" class="nav-cta">Play now →</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-glow-btc"></div>
+        <div class="hero-glow-eth"></div>
+
+        <div class="hero-eyebrow"><span class="live-dot"></span>autonomous · on-chain · deterministic</div>
+
+        <h1 class="hero-title">
+            <span class="bit">bit</span><span class="chess">chess</span>
+        </h1>
+        <p class="hero-sub">Bitcoin vs Ethereum. No humans. Just hashes.</p>
+
+        <div class="vs-badge">
+            <div class="chain-tag btc">
+                <span class="chain-icon">♔</span>
+                <span>Bitcoin</span>
+            </div>
+            <div class="vs-sep">VS</div>
+            <div class="chain-tag eth">
+                <span class="chain-icon">♚</span>
+                <span>Ethereum</span>
+            </div>
+        </div>
+
+        <div class="hero-ctas">
+            <a href="game.html" class="btn-primary">Watch it play →</a>
+            <a href="#how" class="btn-secondary">How it works</a>
+        </div>
+
+        <!-- decorative mini board -->
+        <div class="mini-board" id="mini-board"></div>
+    </section>
+
+    <section class="features" id="features">
+        <h2 class="features-title">Chess, decided by <span>the chain</span></h2>
+        <div class="features-grid">
+            <div class="feat-card">
+                <span class="feat-icon">⛓️</span>
+                <div class="feat-title">Hash-driven moves</div>
+                <div class="feat-desc">Every move is derived directly from the next block hash of that chain. No random
+                    number generator — just pure proof-of-work entropy.</div>
+            </div>
+            <div class="feat-card">
+                <span class="feat-icon">♟️</span>
+                <div class="feat-title">Legal chess only</div>
+                <div class="feat-desc">All standard chess rules apply — illegal moves are rejected and the hash is
+                    consulted further until a legal move is found.</div>
+            </div>
+            <div class="feat-card">
+                <span class="feat-icon">🔁</span>
+                <div class="feat-title">Fully autonomous</div>
+                <div class="feat-desc">Once started, no human intervenes. Bitcoin and Ethereum take turns forever. May
+                    the best chain win.</div>
+            </div>
+            <div class="feat-card">
+                <span class="feat-icon">✅</span>
+                <div class="feat-title">Verifiable</div>
+                <div class="feat-desc">Every move is logged with the block hash that produced it. Any game can be
+                    independently verified against public blockchain data.</div>
+            </div>
+            <div class="feat-card">
+                <span class="feat-icon">📡</span>
+                <div class="feat-title">Coming: Nostr posting</div>
+                <div class="feat-desc">Game results and move logs will be published to Nostr. Permanently timestamped,
+                    censorship-resistant, and open.</div>
+            </div>
+            <div class="feat-card">
+                <span class="feat-icon">📊</span>
+                <div class="feat-title">Scoreboard</div>
+                <div class="feat-desc">Wins, losses, draws — tracked across games. No resets. The record is the record.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how" id="how">
+        <h2 class="how-title">How it <span>works</span></h2>
+        <div class="how-steps">
+            <div class="how-step">
+                <div class="step-num">01</div>
+                <div>
+                    <div class="step-title">A deciding hash picks who goes first</div>
+                    <div class="step-desc">The last significant hex digit of a Bitcoin block hash determines
+                        first-mover. Odd digit → Bitcoin goes first. Even digit → Ethereum goes first.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">02</div>
+                <div>
+                    <div class="step-title">Leading zeros are stripped</div>
+                    <div class="step-desc">Bitcoin hashes begin with many zeros — these are structural (proof-of-work
+                        difficulty) and carry no randomness. They are stripped. The first non-zero character onward is
+                        genuine entropy. A zero appearing <em>after</em> the leading zeros counts normally.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">03</div>
+                <div>
+                    <div class="step-title">Hash characters select the move</div>
+                    <div class="step-desc">Characters <code>1-2</code> select which piece to move. Characters
+                        <code>3-4</code> select the destination square. If the result is an illegal move, the engine
+                        slides further along the hash until a legal move is found.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">04</div>
+                <div>
+                    <div class="step-title">Chains alternate turns</div>
+                    <div class="step-desc">Bitcoin makes a move, then Ethereum, then Bitcoin — regardless of each
+                        chain's block time. One move per block, per chain, per turn.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="step-num">05</div>
+                <div>
+                    <div class="step-title">The game ends when chess ends</div>
+                    <div class="step-desc">Checkmate, stalemate, or a 200-move draw. The winner is recorded. A new game
+                        begins.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="hash-block" id="hash">
+        <div class="hash-card">
+            <div class="hash-card-title">ℹ Hash policy — zero disambiguation</div>
+            <div class="hash-example">
+                <span class="hz">00000000000000000003</span><span class="hs">f1a2b3c4d5e6f7a8b9c0</span><span
+                    style="opacity:.4">d1e2f3a4b5c6d7e8f9</span>
+            </div>
+            <div class="hash-note">
+                <strong>Dim zeros</strong> = proof-of-work leading zeros. Structural. Stripped.<br>
+                <strong>Orange characters</strong> = first significant character onward. Used for move selection.<br>
+                A <code>0</code> appearing in the orange region is <strong>genuine random data</strong> with a 1/16
+                probability — it is not discarded, even though it looks identical to the stripped leading zeros.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-logo"><span class="b">bit</span><span class="e">chess</span></div>
+        <ul class="footer-links">
+            <li><a href="game.html">Play</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="https://crrdlx.vercel.app" target="_blank">crrdlx.vercel.app</a></li>
+        </ul>
+        <div class="footer-credit">Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a></div>
+    </footer>
+
+    <script>
+        // Build decorative mini board
+        const board = document.getElementById('mini-board');
+        const pieces = {
+            70: '♜', 71: '♞', 72: '♝', 73: '♛', 74: '♚', 75: '♝', 76: '♞', 77: '♜',
+            60: '♟', 61: '♟', 62: '♟', 63: '♟', 64: '♟', 65: '♟', 66: '♟', 67: '♟',
+            10: '♙', 11: '♙', 12: '♙', 13: '♙', 14: '♙', 15: '♙', 16: '♙', 17: '♙',
+            0: '♖', 1: '♘', 2: '♗', 3: '♕', 4: '♔', 5: '♗', 6: '♘', 7: '♖',
+        };
+        const highlights = new Set([34, 43, 26, 52]);
+        const btcHl = new Set([12, 34]);
+        const ethHl = new Set([43, 65]);
+
+        for (let r = 7; r >= 0; r--) {
+            for (let c = 0; c < 8; c++) {
+                const idx = r * 10 + c;
+                const sq = document.createElement('div');
+                const isLight = (r + c) % 2 === 0;
+                sq.className = 'mc ' + (isLight ? 'l' : 'd');
+                if (btcHl.has(idx)) sq.classList.add('btc-hl');
+                if (ethHl.has(idx)) sq.classList.add('eth-hl');
+                if (pieces[idx]) sq.textContent = pieces[idx];
+                board.appendChild(sq);
+            }
+        }
+    </script>
+</body>
+
+</html>
