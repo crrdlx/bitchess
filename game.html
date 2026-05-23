@@ -1,4 +1,4 @@
-<!-- game v0.1.0 -->
+<!-- game v0.1.9 -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -797,7 +797,7 @@
             <div>
                 <a href="index.html" class="back-link">← home</a>
                 <div class="logo" style="margin-top:4px"><span class="b">bit</span><span class="e">chess</span><span
-                        class="logo-ver">v0.1.8</span></div>
+                        class="logo-ver">v0.1.9</span></div>
             </div>
             <div class="header-right">
                 <div id="turn-pill" class="pill idle">not started</div>
@@ -974,7 +974,7 @@
                 taken — silver pieces on Bitcoin's card means Bitcoin captured Ethereum's pieces, and vice versa.</p>
             <p>Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a>. Game outcomes will
                 eventually post to Nostr.</p>
-            <p style="font-size:11px;color:var(--text-dim);margin-bottom:0">Bitchess v0.1.8 · Bitcoin vs Ethereum · May
+            <p style="font-size:11px;color:var(--text-dim);margin-bottom:0">Bitchess v0.1.9 · Bitcoin vs Ethereum · May
                 the best chain win.</p>
         </div>
     </div>
@@ -1139,10 +1139,10 @@
 
         // ETH public RPC endpoints — tried in order, first success wins
         const ETH_RPCS = [
-            'https://cloudflare-eth.com',
             'https://rpc.ankr.com/eth',
             'https://eth.llamarpc.com',
             'https://ethereum.publicnode.com',
+            'https://1rpc.io/eth',
         ];
 
         function fetchWithTimeout(url, opts, ms) {
@@ -1152,22 +1152,35 @@
                 .finally(() => clearTimeout(timer));
         }
 
+        // Race all ETH RPCs in parallel — first valid response wins, 5s total timeout
         async function ethRpcCall(params) {
-            for (const rpc of ETH_RPCS) {
-                try {
-                    const res = await fetchWithTimeout(rpc, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBlockByNumber', params, id: 1 })
-                    }, 7000);
-                    if (!res.ok) continue;
-                    const data = await res.json();
-                    if (data.result?.hash) return data.result;
-                } catch (e) {
-                    console.warn(`ETH RPC ${rpc} failed:`, e.message || e);
-                }
-            }
-            return null;
+            const body = JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBlockByNumber', params, id: 1 });
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body };
+
+            const attempts = ETH_RPCS.map(rpc =>
+                fetchWithTimeout(rpc, opts, 5000)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (!data.result?.hash) throw new Error('no hash');
+                        return data.result;
+                    })
+                    .catch(e => {
+                        console.warn(`ETH RPC ${rpc} failed:`, e.message || e);
+                        return null;
+                    })
+            );
+
+            // Return first non-null result
+            return new Promise(resolve => {
+                let remaining = attempts.length;
+                attempts.forEach(p => p.then(result => {
+                    if (result) resolve(result);
+                    else if (--remaining === 0) resolve(null);
+                }));
+            });
         }
 
         async function fetchEthByNumber(blockNum) {
