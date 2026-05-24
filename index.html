@@ -7,7 +7,7 @@
     <title>Bitchess — Bitcoin vs Ethereum</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -22,7 +22,7 @@
             --text: #F0EEE8;
             --text-dim: #888;
             --mono: 'Space Mono', monospace;
-            --sans: 'Syne', sans-serif;
+            --sans: 'Inter', sans-serif;
         }
 
         *,
@@ -644,6 +644,198 @@
                 padding: 90px 16px 48px;
             }
         }
+
+        /* HAMBURGER BUTTON */
+        .hamburger {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 9px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .hamburger:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .hamburger span {
+            display: block;
+            width: 18px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .hamburger.open span:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.open span:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* MENU BACKDROP */
+        .menu-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            backdrop-filter: blur(2px);
+        }
+
+        .menu-backdrop.open {
+            display: block;
+        }
+
+        /* MENU DRAWER */
+        .menu-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(360px, 92vw);
+            height: 100vh;
+            background: #13131A;
+            border-left: 1px solid var(--border);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-drawer.open {
+            transform: translateX(0);
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .menu-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px 4px;
+            transition: color 0.2s;
+        }
+
+        .menu-close:hover {
+            color: var(--text);
+        }
+
+        .menu-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px 32px;
+            /* Custom scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        .menu-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .menu-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+
+        .menu-section-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--btc);
+            margin-bottom: 8px;
+            margin-top: 4px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.15s;
+            margin-bottom: 3px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .menu-item-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            width: 28px;
+            text-align: center;
+        }
+
+        .menu-item-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .menu-item-desc {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 1px;
+        }
+
+        .menu-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #C0BBBA;
+            line-height: 1.7;
+        }
+
+        .menu-card p {
+            margin-bottom: 10px;
+        }
+
+        .menu-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .menu-card strong {
+            color: #E0DBD8;
+        }
+
+        .menu-card a {
+            color: var(--btc);
+            text-decoration: none;
+        }
+
+        .menu-card a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -651,12 +843,97 @@
 
     <nav>
         <div class="nav-logo"><span class="b">bit</span><span class="e">chess</span></div>
-        <ul class="nav-links">
-            <li><a href="#how">How it works</a></li>
-            <li><a href="#hash">Hash policy</a></li>
-            <li><a href="game.html" class="nav-cta">Play now →</a></li>
-        </ul>
+        <div style="display:flex;align-items:center;gap:12px">
+            <a href="game.html" class="nav-cta"
+                style="text-decoration:none;padding:7px 16px;background:var(--btc);color:#000;border-radius:6px;font-weight:700;font-size:13px">Play
+                now →</a>
+            <button class="hamburger" id="hamburger-btn" onclick="toggleMenu()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
     </nav>
+
+    <!-- HAMBURGER MENU MODAL -->
+    <div class="menu-backdrop" id="menu-backdrop" onclick="closeMenu()"></div>
+    <div class="menu-drawer" id="menu-drawer">
+        <div class="menu-header">
+            <div style="font-family:var(--mono);font-weight:700;font-size:16px"><span
+                    style="color:var(--btc)">bit</span><span style="color:var(--eth)">chess</span></div>
+            <button class="menu-close" onclick="closeMenu()">×</button>
+        </div>
+        <div class="menu-body">
+
+            <div class="menu-section-label">Navigate</div>
+            <a class="menu-item" href="game.html">
+                <span class="menu-item-icon">♟</span>
+                <div>
+                    <div class="menu-item-title">Play</div>
+                    <div class="menu-item-desc">Start a new game — Bitcoin vs Ethereum</div>
+                </div>
+            </a>
+            <a class="menu-item" href="#how" onclick="closeMenu()">
+                <span class="menu-item-icon">📖</span>
+                <div>
+                    <div class="menu-item-title">How it works</div>
+                    <div class="menu-item-desc">Game rules and move derivation</div>
+                </div>
+            </a>
+            <a class="menu-item" href="how-moves-work.html">
+                <span class="menu-item-icon">📐</span>
+                <div>
+                    <div class="menu-item-title">How moves work</div>
+                    <div class="menu-item-desc">Full walkthrough with charts &amp; examples</div>
+                </div>
+            </a>
+
+            <div class="menu-section-label" style="margin-top:20px">Links</div>
+            <a class="menu-item" href="https://github.com/crrdlx" target="_blank">
+                <span class="menu-item-icon">⌨</span>
+                <div>
+                    <div class="menu-item-title">GitHub</div>
+                    <div class="menu-item-desc">github.com/crrdlx</div>
+                </div>
+            </a>
+            <a class="menu-item" href="https://crrdlx.vercel.app" target="_blank">
+                <span class="menu-item-icon">🌐</span>
+                <div>
+                    <div class="menu-item-title">crrdlx.vercel.app</div>
+                    <div class="menu-item-desc">More projects by crrdlx</div>
+                </div>
+            </a>
+
+            <div class="menu-section-label" style="margin-top:20px">About</div>
+            <div class="menu-card">
+                <p>Bitchess is a fully autonomous chess game played between two blockchains. <strong>Bitcoin</strong>
+                    plays orange pieces. <strong>Ethereum</strong> plays silver pieces.</p>
+                <p>Every move is determined by the next block hash from that chain — no humans, no AI, just
+                    cryptographic entropy. The same starting block numbers always produce the same game, forever.</p>
+                <p>Game outcomes will eventually post to Nostr.</p>
+                <p style="margin-bottom:0">Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a>
+                </p>
+            </div>
+
+            <div class="menu-section-label" style="margin-top:20px">Rules &amp; replicability</div>
+            <div class="menu-card">
+                <p><strong>Who goes first:</strong> The last significant hex digit of a deciding Bitcoin block hash —
+                    odd = Bitcoin, even = Ethereum.</p>
+                <p><strong>Move selection:</strong> Strip leading zeros (proof-of-work, not random). Characters 1–2 of
+                    the remaining hash select which piece to move. Characters 3–4 select the destination square. Illegal
+                    moves fall back further along the hash. A block that yields nothing is skipped.</p>
+                <p><strong>Replicability:</strong> Block hashes are immutable on-chain. Starting a game at BTC block
+                    840,000 today and again in ten years produces the exact same game. Every move log entry links to the
+                    block on its chain explorer for independent verification.</p>
+                <p style="margin-bottom:0"><strong>Simulated hashes</strong> (marked [sim]) are used when the block API
+                    is unreachable. These games cannot be verified on-chain.</p>
+            </div>
+
+            <div
+                style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
+                Bitchess · Bitcoin vs Ethereum<br>May the best chain win.
+            </div>
+
+        </div>
+    </div>
 
     <section class="hero">
         <div class="hero-glow-btc"></div>
@@ -748,8 +1025,9 @@
                 <div>
                     <div class="step-title">Leading zeros are stripped</div>
                     <div class="step-desc">Bitcoin hashes begin with many zeros — these are structural (proof-of-work
-                        difficulty) and carry no randomness. They are stripped. The first non-zero character onward is
-                        genuine entropy. A zero appearing <em>after</em> the leading zeros counts normally.</div>
+                        difficulty) and carry no randomness. Everything up to and not including the first non-zero
+                        character is stripped. From that first non-zero character onward, all characters — including any
+                        zeros that appear — are genuine random entropy and count normally.</div>
                 </div>
             </div>
             <div class="how-step">
@@ -784,14 +1062,16 @@
         <div class="hash-card">
             <div class="hash-card-title">ℹ Hash policy — zero disambiguation</div>
             <div class="hash-example">
-                <span class="hz">00000000000000000003</span><span class="hs">f1a2b3c4d5e6f7a8b9c0</span><span
-                    style="opacity:.4">d1e2f3a4b5c6d7e8f9</span>
+                <span class="hz">0000000000000000000</span><span class="hs">3f1a2b3c4d5e6f7a8b9c0d1e2f3</span><span
+                    style="opacity:.3">a4b5c6d7e8f9</span>
             </div>
             <div class="hash-note">
-                <strong>Dim zeros</strong> = proof-of-work leading zeros. Structural. Stripped.<br>
-                <strong>Orange characters</strong> = first significant character onward. Used for move selection.<br>
-                A <code>0</code> appearing in the orange region is <strong>genuine random data</strong> with a 1/16
-                probability — it is not discarded, even though it looks identical to the stripped leading zeros.
+                <strong>Dim characters</strong> = proof-of-work leading zeros. Structural. Stripped before move
+                calculation.<br>
+                <strong>Orange characters</strong> = everything from the first non-zero character onward. Used for move
+                selection.<br>
+                A <code>0</code> appearing in the orange region is <strong>genuine random data</strong> — it is counted
+                normally, even though it looks the same as the stripped leading zeros.
             </div>
         </div>
     </div>
@@ -832,6 +1112,31 @@
             }
         }
     </script>
+
+    <script>
+        function toggleMenu() {
+            const btn = document.getElementById('hamburger-btn');
+            const drawer = document.getElementById('menu-drawer');
+            const backdrop = document.getElementById('menu-backdrop');
+            const isOpen = drawer.classList.contains('open');
+            if (isOpen) {
+                closeMenu();
+            } else {
+                btn.classList.add('open');
+                drawer.classList.add('open');
+                backdrop.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        function closeMenu() {
+            document.getElementById('hamburger-btn').classList.remove('open');
+            document.getElementById('menu-drawer').classList.remove('open');
+            document.getElementById('menu-backdrop').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+    </script>
+
 </body>
 
 </html>

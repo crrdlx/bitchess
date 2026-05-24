@@ -1,0 +1,818 @@
+<!-- how-moves-work v0.1.0 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitchess — How Moves Work</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --btc: #F7931A;
+            --eth: #9EA8D0;
+            --bg: #0A0A0B;
+            --bg2: #111114;
+            --bg3: #18181C;
+            --border: rgba(255, 255, 255, 0.07);
+            --text: #F0EEE8;
+            --text-dim: #888;
+            --mono: 'Space Mono', monospace;
+            --sans: 'Inter', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            padding-bottom: 60px
+        }
+
+        a {
+            color: var(--btc);
+            text-decoration: none
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 10, 11, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10
+        }
+
+        .nav-logo {
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .nav-logo .b {
+            color: var(--btc)
+        }
+
+        .nav-logo .e {
+            color: var(--eth)
+        }
+
+        .nav-back {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-dim);
+            transition: color .2s
+        }
+
+        .nav-back:hover {
+            color: var(--btc);
+            text-decoration: none
+        }
+
+        .page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px
+        }
+
+        h1 {
+            font-size: clamp(26px, 4vw, 38px);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px
+        }
+
+        h1 span {
+            color: var(--btc)
+        }
+
+        .subtitle {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            line-height: 1.6
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            margin-top: 36px;
+            letter-spacing: -0.2px
+        }
+
+        h2:first-of-type {
+            margin-top: 0
+        }
+
+        p {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            color: #C0BBBA;
+            line-height: 1.8;
+            margin-bottom: 14px
+        }
+
+        p strong {
+            color: #E0DBD8
+        }
+
+        /* HASH ANATOMY */
+        .hash-anatomy {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px
+        }
+
+        .hash-string {
+            font-family: var(--mono);
+            font-size: clamp(11px, 2vw, 14px);
+            word-break: break-all;
+            line-height: 2.2;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px
+        }
+
+        .h-zero {
+            color: rgba(255, 255, 255, 0.2)
+        }
+
+        .h-p1 {
+            background: rgba(247, 147, 26, 0.25);
+            color: #FFB347;
+            border-radius: 3px;
+            padding: 1px 2px
+        }
+
+        .h-p2 {
+            background: rgba(100, 200, 100, 0.2);
+            color: #90EE90;
+            border-radius: 3px;
+            padding: 1px 2px
+        }
+
+        .h-rest {
+            color: rgba(255, 255, 255, 0.35)
+        }
+
+        .hash-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px
+        }
+
+        .hl-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-size: 12px
+        }
+
+        .hl-swatch {
+            width: 28px;
+            height: 18px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700
+        }
+
+        /* STEP CARDS */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .step-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 16px;
+            align-items: start
+        }
+
+        .step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(247, 147, 26, 0.12);
+            border: 1px solid rgba(247, 147, 26, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--btc);
+            flex-shrink: 0
+        }
+
+        .step-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px
+        }
+
+        .step-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #B8B4B0;
+            line-height: 1.7
+        }
+
+        .step-body strong {
+            color: #E0DBD8
+        }
+
+        .step-body code {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--bg3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: var(--btc)
+        }
+
+        /* PIECE MAPPING TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        th {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border)
+        }
+
+        td {
+            padding: 9px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            color: #C0BBBA;
+            vertical-align: middle
+        }
+
+        tr:last-child td {
+            border-bottom: none
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02)
+        }
+
+        td.mono {
+            font-family: var(--mono);
+            font-size: 12px
+        }
+
+        td.piece-glyph {
+            font-size: 20px;
+            text-align: center
+        }
+
+        .btc-glyph {
+            color: #FF8C00;
+            text-shadow: 0 0 6px rgba(247, 147, 26, 0.6)
+        }
+
+        .eth-glyph {
+            color: #C8D0E8;
+            text-shadow: 0 0 6px rgba(158, 168, 208, 0.5)
+        }
+
+        .range-tag {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 700
+        }
+
+        .range-btc {
+            background: rgba(247, 147, 26, 0.15);
+            color: #FFB347
+        }
+
+        .range-eth {
+            background: rgba(158, 168, 208, 0.15);
+            color: #B0B8D8
+        }
+
+        /* WORKED EXAMPLE */
+        .example-box {
+            background: var(--bg2);
+            border: 1px solid rgba(247, 147, 26, 0.2);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px
+        }
+
+        .example-hash {
+            font-family: var(--mono);
+            font-size: clamp(10px, 1.8vw, 13px);
+            word-break: break-all;
+            line-height: 2;
+            margin-bottom: 16px
+        }
+
+        .example-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .ex-row {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 12px;
+            align-items: baseline;
+            font-size: 13px
+        }
+
+        .ex-arrow {
+            color: var(--btc);
+            font-weight: 700;
+            font-family: var(--mono)
+        }
+
+        .ex-text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            color: #C0BBBA;
+            line-height: 1.6
+        }
+
+        .ex-text strong {
+            color: #E0DBD8
+        }
+
+        .ex-text code {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--bg3);
+            padding: 1px 5px;
+            border-radius: 3px;
+            color: #90EE90
+        }
+
+        /* BOARD DIAGRAM */
+        .mini-demo {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            border: 1px solid rgba(247, 147, 26, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            max-width: 280px;
+            margin: 16px auto
+        }
+
+        .mc {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(14px, 4vw, 22px)
+        }
+
+        .mc.l {
+            background: rgba(240, 217, 181, 0.15)
+        }
+
+        .mc.d {
+            background: rgba(181, 136, 99, 0.18)
+        }
+
+        .mc.from-sq {
+            background: rgba(205, 209, 111, 0.4) !important;
+            outline: 2px solid #CDD16F
+        }
+
+        .mc.to-sq {
+            background: rgba(170, 190, 90, 0.4) !important;
+            outline: 2px solid #AABE5A
+        }
+
+        .btc-p {
+            color: #FF8C00;
+            text-shadow: 0 0 5px rgba(247, 147, 26, 0.7)
+        }
+
+        .eth-p {
+            color: #C8D0E8;
+            text-shadow: 0 0 5px rgba(158, 168, 208, 0.6)
+        }
+
+        .board-caption {
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            margin-bottom: 4px
+        }
+
+        /* INFO BOXES */
+        .info-box {
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.7
+        }
+
+        .info-box.note {
+            background: rgba(247, 147, 26, 0.07);
+            border: 1px solid rgba(247, 147, 26, 0.2);
+            color: #C8B89A
+        }
+
+        .info-box.note strong {
+            color: #FFB347
+        }
+
+        .info-box.tip {
+            background: rgba(100, 200, 100, 0.06);
+            border: 1px solid rgba(100, 200, 100, 0.2);
+            color: #A8C8A0
+        }
+
+        .info-box.tip strong {
+            color: #90EE90
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 32px 0
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-logo"><span class="b">bit</span><span class="e">chess</span></div>
+        <a href="index.html" class="nav-back">← back to home</a>
+    </nav>
+
+    <div class="page">
+
+        <h1>How <span>block hashes</span> become chess moves</h1>
+        <div class="subtitle">A complete walkthrough of the hash-to-move algorithm — from raw block data to piece on the
+            board.</div>
+
+        <!-- STEP 1: ANATOMY OF A HASH -->
+        <h2>Step 1 — Anatomy of a block hash</h2>
+        <p>A Bitcoin block hash is a 64-character hexadecimal string. It always begins with a run of zeros — this is
+            required by proof-of-work difficulty and tells us nothing random. Everything from the <strong>first non-zero
+                character onward</strong> is genuine cryptographic randomness.</p>
+
+        <div class="hash-anatomy">
+            <div class="hash-string">
+                <span class="h-zero">0000000000000000000</span><span class="h-p1">3f1a</span><span
+                    class="h-p2">2b3c</span><span class="h-rest">4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9ab</span>
+            </div>
+            <div class="hash-legend">
+                <div class="hl-item">
+                    <div class="hl-swatch" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.25)">0…
+                    </div><span>Leading zeros — structural (proof-of-work). Stripped.</span>
+                </div>
+                <div class="hl-item">
+                    <div class="hl-swatch" style="background:rgba(247,147,26,0.25);color:#FFB347">f1a2</div><span>Chars
+                        1–2 after strip → select the piece to move</span>
+                </div>
+                <div class="hl-item">
+                    <div class="hl-swatch" style="background:rgba(100,200,100,0.2);color:#90EE90">b3c4</div><span>Chars
+                        3–4 after strip → select the destination square</span>
+                </div>
+                <div class="hl-item">
+                    <div class="hl-swatch" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35)">…
+                    </div><span>Remaining chars — fallback if move is illegal</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box note">
+            <strong>Important:</strong> A <code>0</code> appearing after the leading zeros is genuine random data with a
+            1/16 probability — it is not discarded. The strip only removes the deterministic leading zeros, not any zero
+            that follows.
+        </div>
+
+        <!-- STEP 2: PIECE SELECTION -->
+        <h2>Step 2 — Selecting which piece moves</h2>
+        <p>Take the first two significant hex characters and convert them to a decimal number (0–255). Use
+            <strong>modulo</strong> to map that into the list of legal moves for the active team. This gives a
+            legal-move index.</p>
+
+        <div class="steps">
+            <div class="step-card">
+                <div class="step-num">2a</div>
+                <div>
+                    <div class="step-title">Convert chars 1–2 to decimal</div>
+                    <div class="step-body">Example: <code>f1</code> → hex F1 → decimal <strong>241</strong></div>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">2b</div>
+                <div>
+                    <div class="step-title">Get all legal moves for the active team</div>
+                    <div class="step-body">The engine generates every valid move (respecting check, pins, etc.). Say
+                        there are <strong>28</strong> legal moves at this position.</div>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">2c</div>
+                <div>
+                    <div class="step-title">Pick the piece via modulo</div>
+                    <div class="step-body"><code>241 mod 28 = 17</code> → legal move #17. That move's
+                        <strong>from-square</strong> is now the selected piece's location. All legal moves for that
+                        piece are collected.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: DESTINATION SELECTION -->
+        <h2>Step 3 — Selecting the destination square</h2>
+        <p>Take the next two significant characters (positions 3–4) and use the same modulo approach to pick from the
+            selected piece's legal destination squares.</p>
+
+        <div class="steps">
+            <div class="step-card">
+                <div class="step-num">3a</div>
+                <div>
+                    <div class="step-title">Convert chars 3–4 to decimal</div>
+                    <div class="step-body">Example: <code>b3</code> → hex B3 → decimal <strong>179</strong></div>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">3b</div>
+                <div>
+                    <div class="step-title">Pick destination via modulo</div>
+                    <div class="step-body">If the selected piece has <strong>5</strong> legal destination squares:
+                        <code>179 mod 5 = 4</code> → destination square #4 (0-indexed). The move is made.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIECE MAPPING TABLE -->
+        <h2>Piece reference</h2>
+        <p>Both teams use all six standard chess piece types. Bitcoin plays orange pieces (white side), Ethereum plays
+            silver pieces (black side).</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Piece</th>
+                        <th>Bitcoin (orange)</th>
+                        <th>Ethereum (silver)</th>
+                        <th>Moves like</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>King</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♔</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♚</span></td>
+                        <td>One square any direction</td>
+                        <td class="mono">—</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Queen</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♕</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♛</span></td>
+                        <td>Any distance, any direction</td>
+                        <td class="mono">9</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rook</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♖</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♜</span></td>
+                        <td>Any distance, straight lines</td>
+                        <td class="mono">5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bishop</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♗</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♝</span></td>
+                        <td>Any distance, diagonals only</td>
+                        <td class="mono">3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Knight</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♘</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♞</span></td>
+                        <td>L-shape, jumps over pieces</td>
+                        <td class="mono">3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pawn</strong></td>
+                        <td class="piece-glyph"><span class="btc-glyph">♙</span></td>
+                        <td class="piece-glyph"><span class="eth-glyph">♟</span></td>
+                        <td>Forward 1–2, captures diagonally</td>
+                        <td class="mono">1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FALLBACK -->
+        <h2>Step 4 — Fallback for illegal moves</h2>
+        <p>Since the hash determines moves purely by arithmetic, occasionally the derived move would be illegal — for
+            example, moving into check. The engine handles this gracefully:</p>
+
+        <div class="steps">
+            <div class="step-card">
+                <div class="step-num">4a</div>
+                <div>
+                    <div class="step-title">Illegal move detected</div>
+                    <div class="step-body">All legal moves are pre-filtered for legality (check, pins, etc.) before the
+                        hash selects from them, so by construction the <strong>selected move is always legal</strong>.
+                        Illegality cannot arise from the selection step itself.</div>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">4b</div>
+                <div>
+                    <div class="step-title">Null result from hash</div>
+                    <div class="step-body">If the hash is too short after stripping to produce a valid index (extremely
+                        unlikely with real 64-char hashes), <strong>that block is skipped</strong> and the next block
+                        from the same chain is fetched.</div>
+                </div>
+            </div>
+            <div class="step-card">
+                <div class="step-num">4c</div>
+                <div>
+                    <div class="step-title">Checkmate / stalemate</div>
+                    <div class="step-body">If the active team has <strong>zero legal moves</strong>, the game ends —
+                        checkmate if in check, stalemate (draw) if not. No block is fetched.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKED EXAMPLE -->
+        <h2>Worked example — Bitcoin's move</h2>
+        <p>Let's trace a real move from a Bitcoin block hash.</p>
+
+        <div class="example-box">
+            <div class="example-hash">
+                <span style="opacity:.22;font-family:var(--mono)">0000000000000000000</span><span
+                    style="color:#FFB347;font-weight:700;font-family:var(--mono)">a3f7</span><span
+                    style="color:#90EE90;font-weight:700;font-family:var(--mono)">2c1b</span><span
+                    style="opacity:.3;font-family:var(--mono)">d4e5f6a7b8c9d0e1f2a3b4c5</span>
+            </div>
+            <div class="example-steps">
+                <div class="ex-row"><span class="ex-arrow">①</span>
+                    <div class="ex-text">Strip leading zeros → significant portion starts at <strong>3a7f2c1b…</strong>
+                    </div>
+                </div>
+                <div class="ex-row"><span class="ex-arrow">②</span>
+                    <div class="ex-text">Chars 1–2: <strong>a3</strong> → decimal <strong>163</strong>. Say there are 31
+                        legal moves → <code>163 mod 31 = 8</code> → legal move #8. That move originates from
+                        <strong>e2</strong> (a pawn).</div>
+                </div>
+                <div class="ex-row"><span class="ex-arrow">③</span>
+                    <div class="ex-text">Collect all legal moves for the pawn on e2. It can go to <strong>e3</strong> or
+                        <strong>e4</strong> — 2 options.</div>
+                </div>
+                <div class="ex-row"><span class="ex-arrow">④</span>
+                    <div class="ex-text">Chars 3–4: <strong>f7</strong> → decimal <strong>247</strong>.
+                        <code>247 mod 2 = 1</code> → destination #1 = <strong>e4</strong>.</div>
+                </div>
+                <div class="ex-row"><span class="ex-arrow">⑤</span>
+                    <div class="ex-text">Result: <strong>pawn advances e2 → e4</strong>. ✓ Legal. Move made.</div>
+                </div>
+            </div>
+
+            <div class="board-caption">Board position after e2 → e4</div>
+            <div class="mini-demo" id="example-board"></div>
+        </div>
+
+        <!-- WHO GOES FIRST -->
+        <h2>Who goes first?</h2>
+        <p>Before the first move, a "deciding block" is fetched from Bitcoin. The <strong>last significant hex
+                digit</strong> (rightmost non-zero character) determines who plays first:</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Last digit value</th>
+                        <th>Parity</th>
+                        <th>Goes first</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono">1, 3, 5, 7, 9, b, d, f</td>
+                        <td>Odd</td>
+                        <td><span style="color:#FF8C00;font-weight:600">Bitcoin ♔</span> (orange)</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">0, 2, 4, 6, 8, a, c, e</td>
+                        <td>Even</td>
+                        <td><span style="color:#C8D0E8;font-weight:600">Ethereum ♚</span> (silver)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- REPLICABILITY -->
+        <h2>Replicability and verification</h2>
+
+        <div class="info-box tip">
+            <strong>Every game is permanently reproducible.</strong> Block hashes are immutable on-chain. Starting a
+            game at BTC block 840,000 today or in 10 years produces the exact same sequence of moves. Each move log
+            entry links directly to the block on its chain explorer so anyone can independently re-derive the move.
+        </div>
+
+        <p>To replay a game: note the BTC and ETH starting block numbers displayed after game start, then use
+            <strong>Start at block</strong> mode with those same numbers.</p>
+
+        <hr class="divider">
+
+        <p style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-dim)">
+            <a href="index.html">← home</a> &nbsp;·&nbsp; <a href="game.html">play →</a> &nbsp;·&nbsp; Made with ♥ by <a
+                href="https://crrdlx.vercel.app">crrdlx</a>
+        </p>
+
+    </div>
+
+    <script>
+        // Render example board showing e2→e4 pawn move
+        const board = document.getElementById('example-board');
+        // Starting position with e-pawn on e4 instead of e2
+        const pieces = {
+            70: '♜', 71: '♞', 72: '♝', 73: '♛', 74: '♚', 75: '♝', 76: '♞', 77: '♜',
+            60: '♟', 61: '♟', 62: '♟', 63: '♟', 64: '♟', 65: '♟', 66: '♟', 67: '♟',
+            10: '♙', 11: '♙', 12: '♙', 13: '♙', 15: '♙', 16: '♙', 17: '♙', // e-pawn removed from e2
+            30: '♙', // e-pawn placed on e4 (rank 3, file 4)
+            0: '♖', 1: '♘', 2: '♗', 3: '♕', 4: '♔', 5: '♗', 6: '♘', 7: '♖'
+        };
+        const fromSq = 14; // e2 = rank1, file4 (was)
+        const toSq = 34; // e4 = rank3, file4
+
+        for (let r = 7; r >= 0; r--) {
+            for (let f = 0; f < 8; f++) {
+                const idx = r * 10 + f;
+                const el = document.createElement('div');
+                const isLight = (r + f) % 2 === 0;
+                el.className = 'mc ' + (isLight ? 'l' : 'd');
+                if (idx === fromSq) el.classList.add('from-sq');
+                if (idx === toSq) el.classList.add('to-sq');
+                if (pieces[idx]) {
+                    const isWhite = ['♖', '♘', '♗', '♕', '♔', '♙'].includes(pieces[idx]);
+                    el.innerHTML = `<span class="${isWhite ? 'btc-p' : 'eth-p'}">${pieces[idx]}</span>`;
+                }
+                board.appendChild(el);
+            }
+        }
+    </script>
+</body>
+
+</html>

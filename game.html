@@ -1,4 +1,4 @@
-<!-- game v0.1.9 -->
+<!-- game v0.2.3 -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,7 +8,7 @@
     <title>Bitchess — Play</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -23,7 +23,7 @@
             --text: #F0EEE8;
             --text-dim: #777;
             --mono: 'Space Mono', monospace;
-            --sans: 'Syne', sans-serif;
+            --sans: 'Inter', sans-serif;
             --sq-light: #F0D9B5;
             --sq-dark: #B58863;
         }
@@ -705,9 +705,10 @@
             inset: 0;
             background: rgba(0, 0, 0, 0.6);
             z-index: 200;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            padding: 24px
+            padding: 24px;
+            overflow-y: auto
         }
 
         .modal-bg.open {
@@ -725,7 +726,8 @@
             font-size: 14px;
             line-height: 1.8;
             color: #C8C4BC;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            margin: auto
         }
 
         .modal h2 {
@@ -797,7 +799,7 @@
             <div>
                 <a href="index.html" class="back-link">← home</a>
                 <div class="logo" style="margin-top:4px"><span class="b">bit</span><span class="e">chess</span><span
-                        class="logo-ver">v0.1.9</span></div>
+                        class="logo-ver">v0.2.3</span></div>
             </div>
             <div class="header-right">
                 <div id="turn-pill" class="pill idle">not started</div>
@@ -917,10 +919,10 @@
         </div>
 
         <div class="footnote">
-            <strong style="color:var(--text)">Hash policy:</strong> Leading zeros (proof-of-work) are stripped. The
-            first non-zero character onward is used left-to-right. A zero after the leading zeros is genuine random data
-            and counts normally. If no legal move is derivable, that block is skipped and the next block from that chain
-            is awaited.
+            <strong style="color:var(--text)">Hash policy:</strong> Leading zeros (proof-of-work) are stripped. From the
+            first non-zero character onward, all characters are used left-to-right — including any zeros that appear
+            there, which are genuine random data. If no legal move is derivable, that block is skipped and the next
+            block from that chain is awaited.
         </div>
 
     </div>
@@ -972,9 +974,10 @@
             </p>
             <p><strong style="color:var(--text)">Captured pieces</strong> are shown in the color of the piece that was
                 taken — silver pieces on Bitcoin's card means Bitcoin captured Ethereum's pieces, and vice versa.</p>
-            <p>Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a>. Game outcomes will
-                eventually post to Nostr.</p>
-            <p style="font-size:11px;color:var(--text-dim);margin-bottom:0">Bitchess v0.1.9 · Bitcoin vs Ethereum · May
+            <p>See <a href="how-moves-work.html">how moves work</a> for a full walkthrough with charts. Game outcomes
+                will eventually post to Nostr.</p>
+            <p>Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a>.</p>
+            <p style="font-size:11px;color:var(--text-dim);margin-bottom:0">Bitchess v0.2.3 · Bitcoin vs Ethereum · May
                 the best chain win.</p>
         </div>
     </div>
@@ -1053,7 +1056,12 @@
         }
 
         // ── HASH UTILITIES ───────────────────────────────────────────────────────────
-        function stripLeadingZeros(h) { let i = 0; while (i < h.length && h[i] === '0') i++; return { stripped: h.slice(i), startIdx: i }; }
+        function stripLeadingZeros(h) {
+            // Normalize: remove 0x prefix if present (ETH hashes include it, BTC don't)
+            if (h && h.slice(0, 2) === '0x') h = h.slice(2);
+            let i = 0; while (i < h.length && h[i] === '0') i++;
+            return { stripped: h.slice(i), startIdx: i };
+        }
 
         function fmtHash(h) {
             const { stripped, startIdx } = stripLeadingZeros(h);
@@ -1138,13 +1146,6 @@
         }
 
         // ETH public RPC endpoints — tried in order, first success wins
-        const ETH_RPCS = [
-            'https://rpc.ankr.com/eth',
-            'https://eth.llamarpc.com',
-            'https://ethereum.publicnode.com',
-            'https://1rpc.io/eth',
-        ];
-
         function fetchWithTimeout(url, opts, ms) {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), ms);
@@ -1152,60 +1153,91 @@
                 .finally(() => clearTimeout(timer));
         }
 
-        // Race all ETH RPCs in parallel — first valid response wins, 5s total timeout
-        async function ethRpcCall(params) {
+        // ── ETH STRATEGY 1: Etherscan REST API (simple GET, no key needed, great CORS)
+        async function ethViaEtherscan(blockParam) {
+            // blockParam: 'latest' or a decimal block number string
+            const tag = blockParam === 'latest' ? 'latest' : '0x' + parseInt(blockParam).toString(16);
+            const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${tag}&boolean=false&apikey=YourApiKeyToken`;
+            try {
+                const res = await fetchWithTimeout(url, {}, 5000);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data?.result?.hash) throw new Error('no hash');
+                const height = parseInt(data.result.number, 16);
+                const rawHash = data.result.hash.startsWith('0x') ? data.result.hash.slice(2) : data.result.hash;
+                return { hash: rawHash, height, url: `https://etherscan.io/block/${height}`, simulated: false };
+            } catch (e) {
+                console.warn('Etherscan API failed:', e.message);
+                return null;
+            }
+        }
+
+        // ── ETH STRATEGY 2: JSON-RPC race across multiple public nodes
+        const ETH_RPCS = [
+            'https://rpc.ankr.com/eth',
+            'https://ethereum.publicnode.com',
+            'https://eth.llamarpc.com',
+            'https://eth.drpc.org',
+            'https://1rpc.io/eth',
+        ];
+
+        async function ethViaRpc(blockParam) {
+            const params = blockParam === 'latest' ? ['latest', false] : ['0x' + parseInt(blockParam).toString(16), false];
             const body = JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBlockByNumber', params, id: 1 });
             const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body };
 
-            const attempts = ETH_RPCS.map(rpc =>
-                fetchWithTimeout(rpc, opts, 5000)
-                    .then(res => {
-                        if (!res.ok) throw new Error(`${res.status}`);
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (!data.result?.hash) throw new Error('no hash');
-                        return data.result;
-                    })
-                    .catch(e => {
-                        console.warn(`ETH RPC ${rpc} failed:`, e.message || e);
-                        return null;
-                    })
-            );
-
-            // Return first non-null result
             return new Promise(resolve => {
-                let remaining = attempts.length;
-                attempts.forEach(p => p.then(result => {
-                    if (result) resolve(result);
-                    else if (--remaining === 0) resolve(null);
-                }));
+                let settled = false;
+                let failed = 0;
+                const total = ETH_RPCS.length;
+
+                ETH_RPCS.forEach(rpc => {
+                    fetchWithTimeout(rpc, opts, 4000)
+                        .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+                        .then(data => {
+                            if (!data?.result?.hash) throw new Error('no hash');
+                            if (!settled) {
+                                settled = true;
+                                const height = parseInt(data.result.number, 16);
+                                console.log('ETH RPC success:', rpc, height);
+                                const rawHash = data.result.hash.startsWith('0x') ? data.result.hash.slice(2) : data.result.hash;
+                                resolve({ hash: rawHash, height, url: `https://etherscan.io/block/${height}`, simulated: false });
+                            }
+                        })
+                        .catch(e => {
+                            console.warn(`ETH RPC ${rpc}:`, e.message);
+                            if (++failed === total && !settled) { settled = true; resolve(null); }
+                        });
+                });
+
+                // Hard outer timeout
+                setTimeout(() => { if (!settled) { settled = true; console.warn('ETH RPC: timed out'); resolve(null); } }, 5000);
+            });
+        }
+
+        // ── ETH FETCH: try Etherscan first, then RPC race, then simulate
+        async function fetchEthBlock(blockParam) {
+            // Try both strategies in parallel — first valid result wins
+            return new Promise(resolve => {
+                let settled = false;
+                let failed = 0;
+                const done = (result) => { if (!settled) { settled = true; resolve(result); } };
+                const fail = () => { if (++failed === 2 && !settled) { settled = true; resolve(null); } };
+
+                ethViaEtherscan(blockParam).then(r => r ? done(r) : fail()).catch(fail);
+                ethViaRpc(blockParam).then(r => r ? done(r) : fail()).catch(fail);
+
+                // Absolute hard timeout — never hang more than 6s total
+                setTimeout(() => { if (!settled) { console.warn('ETH fetch: absolute timeout'); done(null); } }, 6000);
             });
         }
 
         async function fetchEthByNumber(blockNum) {
-            const hexNum = '0x' + blockNum.toString(16);
-            const result = await ethRpcCall([hexNum, false]);
-            if (!result) return null;
-            const height = parseInt(result.number, 16);
-            return {
-                hash: result.hash,
-                height,
-                url: `https://etherscan.io/block/${height}`,
-                simulated: false
-            };
+            return fetchEthBlock(String(blockNum));
         }
 
         async function fetchEthLatest() {
-            const result = await ethRpcCall(['latest', false]);
-            if (!result) return null;
-            const height = parseInt(result.number, 16);
-            return {
-                hash: result.hash,
-                height,
-                url: `https://etherscan.io/block/${height}`,
-                simulated: false
-            };
+            return fetchEthBlock('latest');
         }
 
         function makeFallback(chain, seed) {
@@ -1315,11 +1347,13 @@
             const { stripped } = stripLeadingZeros(hash);
             if (stripped.length < 2) return null;
             const pidx = parseInt(stripped.slice(0, 2), 16) % legal.length;
-            const byPiece = legal.filter(m => m.from === legal[pidx].from);
-            if (!byPiece.length) return legal[pidx];
+            const anchor = legal[pidx];
+            if (!anchor) return legal[0]; // safety: should never happen after normalization
+            const byPiece = legal.filter(m => m.from === anchor.from);
+            if (!byPiece.length) return anchor;
             const dseg = stripped.length >= 4 ? stripped.slice(2, 4) : stripped.slice(0, 2);
             const didx = parseInt(dseg, 16) % byPiece.length;
-            return byPiece[didx] || legal[pidx];
+            return byPiece[didx] || anchor;
         }
 
         // ── ANIMATION ────────────────────────────────────────────────────────────────
@@ -1443,6 +1477,7 @@
             G.animating = true;
 
             const color = G.turn, chain = color === 'w' ? 'btc' : 'eth';
+            console.log(`stepMove: ${chain.toUpperCase()} to move (${color})`);
             const legal = getLegalMoves(G.board, color);
             if (!legal.length) {
                 G.animating = false;
@@ -1451,7 +1486,9 @@
             }
 
             document.getElementById('btn-step').disabled = true;
+            console.log(`Fetching block for ${chain.toUpperCase()}...`);
             const block = await getBlockForChain(chain);
+            console.log(`Got block for ${chain.toUpperCase()}:`, block?.height, block?.simulated ? '[sim]' : '[real]', block?.hash?.slice(0, 12));
             advanceCursor(chain);
             document.getElementById('btn-step').disabled = (G.status !== 'playing');
 
