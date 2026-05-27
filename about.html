@@ -23,7 +23,7 @@
       --text: #F0EEE8;
       --text-dim: #888;
       --mono: 'Space Mono', monospace;
-      --title-font: 'Source Code Pro', monospace;
+      --title-font: 'Space Mono', monospace;
       --sans: 'Inter', sans-serif;
     }
 
@@ -495,7 +495,6 @@
 
   <div class="page">
 
-    <!-- HERO -->
     <div class="hero">
       <div class="hero-eyebrow"><span class="live-dot"></span>autonomous · on-chain · deterministic</div>
       <h1 class="hero-title"><span class="b">bit</span><span class="e">chess</span></h1>
@@ -506,12 +505,11 @@
         <div class="chain-tag eth"><span class="chain-icon">♚</span><span>Ethereum</span></div>
       </div>
       <div class="hero-ctas">
-        <a href="index.html" class="btn-primary">Watch it play →</a>
+        <a href="index.html" class="btn-primary">watch or play →</a>
         <a href="how-moves-work.html" class="btn-secondary">How moves work</a>
       </div>
     </div>
 
-    <!-- WHAT IS IT -->
     <div class="section">
       <h2>What is <span>Bitchess</span>?</h2>
       <p>Bitchess is a fully autonomous chess game played between two blockchains. <strong>Bitcoin</strong> plays orange
@@ -522,7 +520,6 @@
         games, all time.</p>
     </div>
 
-    <!-- FEATURES -->
     <div class="section">
       <h2>What makes it <span>different</span>?</h2>
       <div class="feat-grid">
@@ -560,14 +557,13 @@
       </div>
     </div>
 
-    <!-- GAME MODES -->
     <div class="section">
       <h2>Game <span>modes</span></h2>
       <div class="modes">
         <div class="mode-card">
           <div class="mode-num">01</div>
           <div>
-            <div class="mode-title">Live</div>
+            <div class="mode-title">Watch - Live</div>
             <div class="mode-desc">Pulls the latest block hash from Bitcoin and Ethereum as each move is made. Uses
               mempool.space (BTC) and public Ethereum RPC nodes. Falls back to deterministic simulated hashes if the API
               is unreachable.</div>
@@ -576,24 +572,22 @@
         <div class="mode-card">
           <div class="mode-num">02</div>
           <div>
-            <div class="mode-title">Start at block</div>
+            <div class="mode-title">Watch - Start at block</div>
             <div class="mode-desc">Choose a starting Bitcoin block number and an Ethereum block number. The game fetches
               those exact blocks and plays forward. Come back a year later, enter the same numbers, and the game plays
               out identically.</div>
           </div>
         </div>
         <div class="mode-card">
-          <div class="mode-num">tip</div>
+          <div class="mode-num">03</div>
           <div>
-            <div class="mode-title">Genesis replay</div>
-            <div class="mode-desc">Want to play from the very beginning of each chain? Use Start at block with BTC block
-              0 and ETH block 0. Every replay from block 0/0 plays out identically — forever.</div>
+            <div class="mode-title">Play</div>
+            <div class="mode-desc">You play to compete against either the Bitcoin or Ethereum blockchains.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- HASH POLICY -->
     <div class="section">
       <h2>Hash <span>policy</span></h2>
       <div class="hash-card">
@@ -615,7 +609,6 @@
       </div>
     </div>
 
-    <!-- CAPTURED PIECES NOTE -->
     <div class="section">
       <h2>Reading the <span>board</span></h2>
       <p><strong>Piece colors:</strong> Bitcoin plays <strong style="color:#FF8C00">orange pieces ♔</strong>. Ethereum
@@ -631,14 +624,10 @@
 
     <hr>
 
-    <!-- ABOUT THE MAKER -->
     <div class="section">
-      <h2>Made by <span>crrdlx</span></h2>
-      <p>Bitchess is a project by <a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a> — an independent
-        builder working in the Bitcoin ecosystem. Other projects include tools for Hive and decentralized protocol
-        interoperability.</p>
-      <p>The source is on <a href="https://github.com/crrdlx" target="_blank">GitHub</a>.</p>
-      <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">Bitchess v0.3.1 · Bitcoin vs Ethereum ·
+      <h2>Made by <span><a href="https://crrdlx.vercel.app" target="_blank">crrdlx</a></span></h2>
+      <p>The source for bitchess is on <a href="https://github.com/crrdlx" target="_blank">GitHub</a>.</p>
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">Bitchess · Bitcoin vs Ethereum ·
         May the best chain win.</p>
     </div>
 
@@ -650,8 +639,6 @@
     </div>
 
   </div>
-  <!-- Default Statcounter code for Bitchess
-https://bitchess.vercel.app -->
   <script type="text/javascript">
     var sc_project = 13255356;
     var sc_invisible = 1;
@@ -663,7 +650,6 @@ https://bitchess.vercel.app -->
           class="statcounter" src="https://c.statcounter.com/13255356/0/cffe9552/1/" alt="Web Analytics"
           referrerPolicy="no-referrer-when-downgrade"></a></div>
   </noscript>
-  <!-- End of Statcounter Code -->
-</body>
+  </body>
 
 </html>
