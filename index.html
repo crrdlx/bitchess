@@ -6,9 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitchess</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -176,7 +178,7 @@
             font-size: 42px;
             font-weight: 800;
             letter-spacing: -1px;
-            font-family: var(--mono);
+            font-family: var(--title-font);
             margin-bottom: 8px;
             line-height: 1
         }
@@ -325,9 +327,9 @@
         }
 
         .play .mc-btn {
-            background: rgba(158, 168, 208, 0.15);
-            color: var(--eth);
-            border: 1px solid rgba(158, 168, 208, 0.3)
+            background: #16A34A;
+            color: #fff;
+            border: 1px solid #16A34A
         }
 
         .mode-card:hover .mc-btn {
@@ -471,11 +473,14 @@
             <div class="feat"><span class="feat-dot"></span>Fully verifiable on-chain</div>
             <div class="feat"><span class="feat-dot"></span>Real chess rules</div>
             <div class="feat"><span class="feat-dot"></span>Replayable by block number</div>
-            <div class="feat"><span class="feat-dot"></span>Made by crrdlx</div>
+        </div>
+
+        <div style="margin-top:40px;font-family:var(--mono);font-size:11px;color:var(--text-dim);text-align:center">
+            Made with ♥ by <a href="https://crrdlx.vercel.app" target="_blank"
+                style="color:var(--btc);text-decoration:none">crrdlx</a>
         </div>
 
     </div>
-
     <!-- Default Statcounter code for Bitchess
 https://bitchess.vercel.app -->
     <script type="text/javascript">

@@ -6,10 +6,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bitchess — How Moves Work</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Code+Pro:wght@400..900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <style>
     :root {
@@ -22,8 +20,8 @@
       --text: #F0EEE8;
       --text-dim: #888;
       --mono: 'Space Mono', monospace;
-      --sans: 'Inter', sans-serif;
       --title-font: 'Source Code Pro', monospace;
+      --sans: 'Inter', sans-serif;
     }
 
     *,
@@ -65,10 +63,9 @@
     }
 
     .nav-logo {
-      font-family: var(--title-font);
+      font-family: var(--mono);
       font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.5px
+      font-weight: 700
     }
 
     .nav-logo .b {
@@ -98,11 +95,11 @@
     }
 
     h1 {
-      font-family: var(--title-font);
       font-size: clamp(26px, 4vw, 38px);
       font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 8px
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      font-family: var(--title-font)
     }
 
     h1 span {
@@ -110,13 +107,11 @@
     }
 
     .subtitle {
-      font-family: var(--title-font);
+      font-family: var(--mono);
       font-size: 13px;
       color: var(--text-dim);
       margin-bottom: 40px;
-      line-height: 1.6;
-      font-weight: 500;
-      letter-spacing: 0.5px
+      line-height: 1.6
     }
 
     h2 {
@@ -553,8 +548,7 @@
     <h2>Step 2 — Selecting which piece moves</h2>
     <p>Take the first two significant hex characters and convert them to a decimal number (0–255). Use
       <strong>modulo</strong> to map that into the list of legal moves for the active team. This gives a legal-move
-      index.
-    </p>
+      index.</p>
 
     <div class="steps">
       <div class="step-card">
@@ -569,8 +563,7 @@
         <div>
           <div class="step-title">Get all legal moves for the active team</div>
           <div class="step-body">The engine generates every valid move (respecting check, pins, etc.). Say there are
-            <strong>28</strong> legal moves at this position.
-          </div>
+            <strong>28</strong> legal moves at this position.</div>
         </div>
       </div>
       <div class="step-card">
@@ -601,8 +594,7 @@
         <div>
           <div class="step-title">Pick destination via modulo</div>
           <div class="step-body">If the selected piece has <strong>5</strong> legal destination squares:
-            <code>179 mod 5 = 4</code> → destination square #4 (0-indexed). The move is made.
-          </div>
+            <code>179 mod 5 = 4</code> → destination square #4 (0-indexed). The move is made.</div>
         </div>
       </div>
     </div>
@@ -726,8 +718,7 @@
         </div>
         <div class="ex-row"><span class="ex-arrow">③</span>
           <div class="ex-text">Collect all legal moves for the pawn on e2. It can go to <strong>e3</strong> or
-            <strong>e4</strong> — 2 options.
-          </div>
+            <strong>e4</strong> — 2 options.</div>
         </div>
         <div class="ex-row"><span class="ex-arrow">④</span>
           <div class="ex-text">Chars 3–4: <strong>f7</strong> → decimal <strong>247</strong>. <code>247 mod 2 = 1</code>
@@ -822,7 +813,6 @@
       }
     }
   </script>
-
   <!-- Default Statcounter code for Bitchess
 https://bitchess.vercel.app -->
   <script type="text/javascript">

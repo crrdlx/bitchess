@@ -6,10 +6,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bitchess — About</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@400..900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <style>
     :root {
@@ -22,8 +23,8 @@
       --text: #F0EEE8;
       --text-dim: #888;
       --mono: 'Space Mono', monospace;
+      --title-font: 'Source Code Pro', monospace;
       --sans: 'Inter', sans-serif;
-      --orbitron: 'Orbitron', sans-serif;
     }
 
     *,
@@ -71,11 +72,10 @@
     }
 
     .nav-logo {
-      font-family: var(--orbitron);
+      font-family: var(--mono);
       font-size: 16px;
       font-weight: 700;
-      text-decoration: none;
-      letter-spacing: -0.5px
+      text-decoration: none
     }
 
     .nav-logo .b {
@@ -141,12 +141,12 @@
     }
 
     .hero-title {
-      font-family: var(--orbitron);
       font-size: clamp(42px, 8vw, 80px);
       font-weight: 800;
-      letter-spacing: -2.5px;
+      letter-spacing: -2px;
       line-height: .95;
-      margin-bottom: 16px
+      margin-bottom: 16px;
+      font-family: var(--title-font)
     }
 
     .hero-title .b {
@@ -158,11 +158,10 @@
     }
 
     .hero-tagline {
-      font-family: var(--orbitron);
+      font-family: var(--mono);
       font-size: 14px;
       color: var(--text-dim);
       letter-spacing: .5px;
-      font-weight: 500;
       margin-bottom: 32px
     }
 
@@ -514,7 +513,7 @@
 
     <!-- WHAT IS IT -->
     <div class="section">
-      <h2>What is <span>bitchess</span>?</h2>
+      <h2>What is <span>Bitchess</span>?</h2>
       <p>Bitchess is a fully autonomous chess game played between two blockchains. <strong>Bitcoin</strong> plays orange
         pieces. <strong>Ethereum</strong> plays silver pieces. Every move is determined by the next block hash from that
         chain — no humans, no AI, no random number generator. Just cryptographic entropy from proof-of-work.</p>
@@ -639,7 +638,7 @@
         builder working in the Bitcoin ecosystem. Other projects include tools for Hive and decentralized protocol
         interoperability.</p>
       <p>The source is on <a href="https://github.com/crrdlx" target="_blank">GitHub</a>.</p>
-      <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">Bitchess · Bitcoin vs Ethereum ·
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text-dim)">Bitchess v0.3.1 · Bitcoin vs Ethereum ·
         May the best chain win.</p>
     </div>
 
