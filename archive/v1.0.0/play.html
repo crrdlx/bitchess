@@ -1,0 +1,1841 @@
+<!-- play v0.1.1 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitchess — Play vs the Chain</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500;600;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --btc: #F7931A;
+            --eth: #9EA8D0;
+            --you: #4ADE80;
+            --bg: #0F0F11;
+            --bg2: #16161A;
+            --bg3: #1E1E24;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #F0EEE8;
+            --text-dim: #B8B8B8;
+            --mono: 'Space Mono', monospace;
+            --sans: 'Inter', sans-serif;
+            --sq-light: #F0D9B5;
+            --sq-dark: #B58863;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh
+        }
+
+        .page {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 12px 12px 40px
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .logo {
+            font-family: var(--title-font);
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1
+        }
+
+        .logo .b {
+            color: var(--btc)
+        }
+
+        .logo .e {
+            color: var(--eth)
+        }
+
+        .logo-ver {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 400;
+            margin-left: 4px;
+            font-family: var(--mono)
+        }
+
+        .back-link {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color .2s
+        }
+
+        .back-link:hover {
+            color: var(--btc)
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        /* TURN BANNER */
+        .turn-banner {
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: background .3s, border-color .3s
+        }
+
+        .turn-banner.your-turn {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.4)
+        }
+
+        .turn-banner.chain-turn {
+            background: rgba(247, 147, 26, 0.08);
+            border: 1px solid rgba(247, 147, 26, 0.25)
+        }
+
+        .turn-banner.chain-turn.eth-turn {
+            background: rgba(158, 168, 208, 0.08);
+            border: 1px solid rgba(158, 168, 208, 0.25)
+        }
+
+        .turn-banner.game-end {
+            background: var(--bg2);
+            border: 1px solid var(--border)
+        }
+
+        .turn-label {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -.2px
+        }
+
+        .turn-sub {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 2px
+        }
+
+        .turn-icon {
+            font-size: 28px;
+            line-height: 1
+        }
+
+        .pulse {
+            animation: turnPulse 1.5s ease-in-out infinite
+        }
+
+        @keyframes turnPulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .5
+            }
+        }
+
+        /* PLAYER/CHAIN CARDS */
+        .match-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: start
+        }
+
+        .team-card {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            transition: border-color .3s, box-shadow .3s
+        }
+
+        .team-card.you-card {
+            background: rgba(74, 222, 128, 0.07);
+            border-color: rgba(74, 222, 128, 0.18)
+        }
+
+        .team-card.chain-card.btc {
+            background: rgba(247, 147, 26, 0.07);
+            border-color: rgba(247, 147, 26, 0.18)
+        }
+
+        .team-card.chain-card.eth {
+            background: rgba(158, 168, 208, 0.07);
+            border-color: rgba(158, 168, 208, 0.18)
+        }
+
+        .team-card.active-turn.you-card {
+            border-color: rgba(74, 222, 128, 0.7);
+            box-shadow: 0 0 24px rgba(74, 222, 128, 0.25), inset 0 0 12px rgba(74, 222, 128, 0.06)
+        }
+
+        .team-card.active-turn.btc {
+            border-color: rgba(247, 147, 26, 0.95);
+            box-shadow: 0 0 24px rgba(247, 147, 26, 0.35), inset 0 0 12px rgba(247, 147, 26, 0.08)
+        }
+
+        .team-card.active-turn.eth {
+            border-color: rgba(158, 168, 208, 0.95);
+            box-shadow: 0 0 24px rgba(158, 168, 208, 0.35), inset 0 0 12px rgba(158, 168, 208, 0.08)
+        }
+
+        .tc-side {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 5px
+        }
+
+        .tc-name {
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .you-card .tc-name {
+            color: var(--you)
+        }
+
+        .chain-card.btc .tc-name {
+            color: var(--btc)
+        }
+
+        .chain-card.eth .tc-name {
+            color: var(--eth)
+        }
+
+        .tc-score {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-top: 6px
+        }
+
+        .you-card .tc-score {
+            color: var(--you)
+        }
+
+        .chain-card.btc .tc-score {
+            color: var(--btc)
+        }
+
+        .chain-card.eth .tc-score {
+            color: var(--eth)
+        }
+
+        .tc-record {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 3px
+        }
+
+        .tc-captures {
+            margin-top: 6px;
+            min-height: 16px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-break: break-all
+        }
+
+        .mid-col {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 2;
+            padding-top: 4px
+        }
+
+        .vs-text {
+            font-size: 14px;
+            font-weight: 700;
+            display: block;
+            color: var(--text)
+        }
+
+        /* GAME BAR */
+        .game-bar {
+            display: none;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            gap: 16px;
+            flex-wrap: wrap
+        }
+
+        .game-bar span strong {
+            color: var(--text);
+            font-weight: 700
+        }
+
+        /* BOARD */
+        .board-section {
+            margin-bottom: 8px
+        }
+
+        .board-outer {
+            width: 100%;
+            display: flex;
+            flex-direction: column
+        }
+
+        .board-with-ranks {
+            display: flex;
+            align-items: stretch;
+            gap: 3px
+        }
+
+        .rank-labels {
+            display: flex;
+            flex-direction: column;
+            width: 14px;
+            flex-shrink: 0
+        }
+
+        .rank-labels span {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text-dim);
+            padding-right: 2px
+        }
+
+        .board-wrap {
+            flex: 1;
+            min-width: 0
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            border: 2px solid rgba(247, 147, 26, 0.25);
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+            position: relative
+        }
+
+        .file-labels {
+            display: flex;
+            margin-left: 17px;
+            margin-top: 2px
+        }
+
+        .file-labels span {
+            flex: 1;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 9px;
+            color: var(--text-dim)
+        }
+
+        /* SQUARES */
+        .sq {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: default;
+            transition: background .15s
+        }
+
+        .sq.l {
+            background: var(--sq-light)
+        }
+
+        .sq.d {
+            background: var(--sq-dark)
+        }
+
+        .sq.from-hl {
+            background: #E2E87A !important
+        }
+
+        .sq.to-hl {
+            background: #9BB84A !important
+        }
+
+        .sq.selected {
+            background: #FFD700 !important;
+            cursor: pointer
+        }
+
+        .sq.legal-move {
+            cursor: pointer
+        }
+
+        .sq.legal-move::after {
+            content: '';
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            pointer-events: none
+        }
+
+        .sq.legal-capture::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border: 3px solid rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+            pointer-events: none
+        }
+
+        .sq.can-move {
+            cursor: pointer
+        }
+
+        .sq.can-move:hover {
+            filter: brightness(1.15)
+        }
+
+        .sq.pre-move-flash {
+            animation: preFlash .18s ease-in-out 3
+        }
+
+        .sq.dest-glow {
+            animation: destPulse .18s ease-in-out 3
+        }
+
+        @keyframes preFlash {
+
+            0%,
+            100% {
+                filter: brightness(1)
+            }
+
+            50% {
+                filter: brightness(2.2);
+                outline: 2px solid #FFD700
+            }
+        }
+
+        @keyframes destPulse {
+
+            0%,
+            100% {
+                filter: brightness(1)
+            }
+
+            50% {
+                filter: brightness(1.6);
+                outline: 2px solid #90EE90
+            }
+        }
+
+        /* PIECES */
+        .piece {
+            user-select: none;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%
+        }
+
+        .piece.wp {
+            color: #FF8C00;
+            text-shadow: 0 0 6px rgba(247, 147, 26, .9), 0 0 12px rgba(247, 147, 26, .5), 1px 1px 0 #3A1A00, -1px -1px 0 #3A1A00, 1px -1px 0 #3A1A00, -1px 1px 0 #3A1A00;
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .6))
+        }
+
+        .piece.bp {
+            color: #C8D0E8;
+            text-shadow: 0 0 6px rgba(158, 168, 208, .9), 0 0 12px rgba(158, 168, 208, .5), 1px 1px 0 #1A1A2E, -1px -1px 0 #1A1A2E, 1px -1px 0 #1A1A2E, -1px 1px 0 #1A1A2E;
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .6))
+        }
+
+        /* Player pieces: green tint */
+        .piece.yp {
+            color: #86EFAC;
+            text-shadow: 0 0 6px rgba(74, 222, 128, .8), 0 0 12px rgba(74, 222, 128, .4), 1px 1px 0 #052e16, -1px -1px 0 #052e16, 1px -1px 0 #052e16, -1px 1px 0 #052e16;
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .6))
+        }
+
+        .piece.is-moving {
+            animation: pieceMove .35s ease-in-out;
+            z-index: 10
+        }
+
+        @keyframes pieceMove {
+            0% {
+                transform: scale(1.3) translateY(-4px);
+                filter: brightness(1.8)
+            }
+
+            50% {
+                transform: scale(1.4) translateY(-8px)
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                filter: brightness(1)
+            }
+        }
+
+        #arrow-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            width: 100%;
+            height: 100%
+        }
+
+        /* SIZE / CONTROLS */
+        .size-row,
+        .speed-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 8px
+        }
+
+        .size-row input,
+        .speed-row input {
+            accent-color: var(--btc)
+        }
+
+        .controls {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            align-items: center;
+            margin-top: 10px
+        }
+
+        button {
+            padding: 7px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg2);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12px;
+            font-family: var(--sans);
+            font-weight: 500;
+            transition: background .15s, border-color .15s
+        }
+
+        button:hover {
+            background: var(--bg3);
+            border-color: rgba(255, 255, 255, 0.15)
+        }
+
+        button:active {
+            transform: scale(.97)
+        }
+
+        button:disabled {
+            opacity: .35;
+            cursor: not-allowed
+        }
+
+        .btn-start {
+            background: var(--btc);
+            border-color: var(--btc);
+            color: #000;
+            font-weight: 700
+        }
+
+        .btn-start:hover {
+            background: #e0841a;
+            border-color: #e0841a
+        }
+
+        /* LEGEND */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            align-items: center
+        }
+
+        .li {
+            display: flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .sw {
+            width: 11px;
+            height: 11px;
+            border-radius: 2px;
+            flex-shrink: 0
+        }
+
+        /* STATUS */
+        .status-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 13px;
+            font-size: 12px;
+            line-height: 1.7;
+            margin-bottom: 10px;
+            font-family: var(--mono);
+            color: var(--text-dim);
+            min-height: 48px
+        }
+
+        .status-box strong {
+            color: var(--text)
+        }
+
+        .hash-disp {
+            font-size: 10px;
+            word-break: break-all;
+            margin-top: 3px;
+            opacity: .7
+        }
+
+        /* LOG */
+        .log-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 5px
+        }
+
+        .log-wrap {
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 12px
+        }
+
+        .log-entry {
+            display: grid;
+            grid-template-columns: 22px 1fr auto;
+            gap: 6px;
+            align-items: baseline;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: var(--bg2);
+            font-family: var(--mono);
+            font-size: 11px;
+            border-left: 2px solid transparent
+        }
+
+        .log-entry.you-m {
+            border-left-color: var(--you)
+        }
+
+        .log-entry.btc-m {
+            border-left-color: var(--btc)
+        }
+
+        .log-entry.eth-m {
+            border-left-color: var(--eth)
+        }
+
+        .log-entry.skip-m {
+            opacity: .5
+        }
+
+        .ln {
+            color: var(--text-dim);
+            font-size: 10px
+        }
+
+        .lm {
+            font-weight: 700;
+            color: var(--text)
+        }
+
+        .lh {
+            font-size: 9px;
+            color: var(--text-dim)
+        }
+
+        /* PILL */
+        .pill {
+            display: inline-block;
+            padding: 2px 9px;
+            border-radius: 20px;
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700
+        }
+
+        .pill.you {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--you);
+            border: 1px solid rgba(74, 222, 128, 0.3)
+        }
+
+        .pill.btc {
+            background: rgba(247, 147, 26, 0.15);
+            color: var(--btc);
+            border: 1px solid rgba(247, 147, 26, 0.3)
+        }
+
+        .pill.eth {
+            background: rgba(158, 168, 208, 0.15);
+            color: var(--eth);
+            border: 1px solid rgba(158, 168, 208, 0.3)
+        }
+
+        .pill.idle {
+            background: var(--bg3);
+            color: var(--text-dim);
+            border: 1px solid var(--border)
+        }
+
+        /* OPPONENT PICKER */
+        .picker {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px
+        }
+
+        .picker-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 14px
+        }
+
+        .picker-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .pick-btn {
+            padding: 14px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg3);
+            cursor: pointer;
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: border-color .2s, background .2s, box-shadow .2s
+        }
+
+        .pick-btn:hover {
+            background: var(--bg2)
+        }
+
+        .pick-btn.btc:hover {
+            border-color: rgba(247, 147, 26, 0.5);
+            box-shadow: 0 0 16px rgba(247, 147, 26, 0.15)
+        }
+
+        .pick-btn.eth:hover {
+            border-color: rgba(158, 168, 208, 0.5);
+            box-shadow: 0 0 16px rgba(158, 168, 208, 0.15)
+        }
+
+        .pick-btn.selected {
+            border-width: 2px
+        }
+
+        .pick-btn.btc.selected {
+            border-color: var(--btc);
+            background: rgba(247, 147, 26, 0.08)
+        }
+
+        .pick-btn.eth.selected {
+            border-color: var(--eth);
+            background: rgba(158, 168, 208, 0.08)
+        }
+
+        .pick-icon {
+            font-size: 28px;
+            line-height: 1
+        }
+
+        /* GAME OVER BANNER */
+        .game-over-banner {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px)
+        }
+
+        .game-over-banner.show {
+            display: flex
+        }
+
+        .game-over-card {
+            background: #1C1C22;
+            border-radius: 16px;
+            padding: 32px 40px;
+            text-align: center;
+            border: 1px solid var(--border);
+            max-width: 320px;
+            width: 90%;
+            animation: bannerIn .35s cubic-bezier(0.34, 1.56, 0.64, 1)
+        }
+
+        @keyframes bannerIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .go-result {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-family: var(--mono)
+        }
+
+        .go-winner {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+            line-height: 1
+        }
+
+        .go-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 22px;
+            font-family: var(--mono)
+        }
+
+        .go-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        .go-btn {
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--sans);
+            border: 1px solid var(--border);
+            transition: opacity .15s
+        }
+
+        .go-btn.primary {
+            background: var(--btc);
+            border-color: var(--btc);
+            color: #000
+        }
+
+        .go-btn.secondary {
+            background: var(--bg3);
+            color: var(--text)
+        }
+
+        .go-btn:hover {
+            opacity: .85
+        }
+
+        /* PICKER MODAL */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 24px;
+            overflow-y: auto
+        }
+
+        .modal-bg.open {
+            display: flex
+        }
+
+        .modal {
+            background: #1C1C22;
+            border: 1px solid rgba(247, 147, 26, 0.3);
+            border-radius: 14px;
+            padding: 26px;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #C8C4BC;
+            font-family: var(--sans);
+            margin: auto
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #F0EEE8;
+            margin-bottom: 14px
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1
+        }
+
+        .modal-close:hover {
+            color: var(--text)
+        }
+
+        /* FOOTNOTE */
+        .footnote {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.7;
+            border-top: 1px solid var(--border);
+            padding-top: 10px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <div class="header">
+            <div>
+                <a href="index.html" class="back-link">← home</a>
+                <div class="logo" style="margin-top:4px"><span class="b">bit</span><span class="e">chess</span><span
+                        class="logo-ver">play v0.1.1</span></div>
+            </div>
+            <div class="header-right">
+                <div id="turn-pill" class="pill idle">not started</div>
+            </div>
+        </div>
+
+        <!-- OPPONENT PICKER -->
+        <div class="picker" id="picker-section">
+            <div class="picker-label">Choose your opponent</div>
+            <div class="picker-options">
+                <button class="pick-btn btc" id="pick-btc" onclick="pickOpponent('btc')">
+                    <span class="pick-icon" style="color:#FF8C00;text-shadow:0 0 8px rgba(247,147,26,0.7)">♔</span>
+                    <span style="color:var(--btc)">Bitcoin</span>
+                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">you play silver</span>
+                </button>
+                <button class="pick-btn eth" id="pick-eth" onclick="pickOpponent('eth')">
+                    <span class="pick-icon" style="color:#C8D0E8;text-shadow:0 0 8px rgba(158,168,208,0.7)">♚</span>
+                    <span style="color:var(--eth)">Ethereum</span>
+                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">you play orange</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MATCH ROW -->
+        <div class="match-row">
+            <div class="team-card you-card" id="card-you">
+                <div class="tc-side">your pieces</div>
+                <div style="display:flex;align-items:center;gap:7px">
+                    <span id="you-glyph"
+                        style="font-size:22px;color:#86EFAC;text-shadow:0 0 8px rgba(74,222,128,0.7)">♙</span>
+                    <span class="tc-name">You</span>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:7px">
+                    <span class="tc-score" id="you-wins">0</span>
+                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">wins</span>
+                </div>
+                <div class="tc-record" id="you-record">0 losses · 0 draws</div>
+                <div class="tc-captures" id="you-caps"></div>
+            </div>
+            <div class="mid-col">
+                <span class="vs-text">vs</span>
+                <span id="game-num" style="font-family:var(--mono);font-size:10px">game 0</span>
+            </div>
+            <div class="team-card chain-card btc" id="card-chain">
+                <div class="tc-side" id="chain-side">chain pieces</div>
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:7px">
+                    <span class="tc-name" id="chain-name">Chain</span>
+                    <span id="chain-glyph" style="font-size:22px">♔</span>
+                </div>
+                <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:6px;margin-top:7px">
+                    <span class="tc-score" id="chain-wins">0</span>
+                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-dim)">wins</span>
+                </div>
+                <div class="tc-record" style="text-align:right" id="chain-record">0 losses · 0 draws</div>
+                <div class="tc-captures" style="text-align:right" id="chain-caps"></div>
+            </div>
+        </div>
+
+        <!-- TURN BANNER -->
+        <div class="turn-banner game-end" id="turn-banner">
+            <div>
+                <div class="turn-label" id="turn-label">Pick an opponent above</div>
+                <div class="turn-sub" id="turn-sub">then press Start game</div>
+            </div>
+            <div class="turn-icon" id="turn-icon">♟</div>
+        </div>
+
+        <!-- GAME BAR -->
+        <div class="game-bar" id="game-bar">
+            <span>Game <strong id="gi-num">—</strong></span>
+            <span>BTC block <strong id="gi-block">—</strong></span>
+            <span>Move <strong id="gi-move">0</strong></span>
+        </div>
+
+        <!-- BOARD -->
+        <div class="board-section">
+            <div class="board-outer" id="board-outer">
+                <div class="board-with-ranks">
+                    <div class="rank-labels" id="rank-labels"></div>
+                    <div class="board-wrap">
+                        <div class="board" id="board">
+                            <svg id="arrow-overlay" viewBox="0 0 800 800" preserveAspectRatio="none"></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-labels" id="file-labels"></div>
+            </div>
+        </div>
+
+        <div class="size-row">
+            <span>Board</span>
+            <input type="range" min="50" max="100" step="2" value="100" id="size-slider">
+            <span id="size-label">100%</span>
+        </div>
+
+        <div class="legend">
+            <div class="li"><span style="color:#86EFAC;font-size:15px">♙</span><span>You (green)</span></div>
+            <div class="li"><span id="chain-legend-glyph" style="font-size:15px;color:#FF8C00">♔</span><span
+                    id="chain-legend-label">Chain</span></div>
+            <div class="li"><span class="sw" style="background:#E2E87A"></span><span>from</span></div>
+            <div class="li"><span class="sw" style="background:#9BB84A"></span><span>to</span></div>
+            <div class="li"><span class="sw" style="background:#FFD700;border-radius:50%"></span><span>selected</span>
+            </div>
+        </div>
+
+        <div class="status-box" id="status-box">Choose your opponent and press <strong>Start game</strong>.</div>
+
+        <div class="log-label">Move log</div>
+        <div class="log-wrap" id="move-log">
+            <div style="font-size:11px;color:var(--text-dim);padding:3px 8px;font-family:var(--mono)">No moves yet.
+            </div>
+        </div>
+
+        <div class="controls" style="margin-top:10px">
+            <button class="btn-start" id="btn-start" onclick="startGame()" disabled>Start game</button>
+            <button id="btn-resign" onclick="resignGame()" disabled>Resign</button>
+        </div>
+
+        <div class="footnote" style="margin-top:12px">
+            <strong style="color:var(--text)">Chain moves:</strong> Derived from real block hashes — verifiable
+            on-chain. Your moves are yours. <a href="how-moves-work.html" style="color:var(--btc)">How moves work →</a>
+        </div>
+
+    </div>
+
+    <!-- GAME OVER BANNER -->
+    <div class="game-over-banner" id="game-over-banner">
+        <div class="game-over-card">
+            <div class="go-result" id="go-result"></div>
+            <div class="go-winner" id="go-winner"></div>
+            <div class="go-sub" id="go-sub"></div>
+            <div class="go-btns">
+                <button class="go-btn secondary" onclick="closeGameOver()">View final board</button>
+                <button class="go-btn primary" onclick="newGame()">New game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── CHESS ENGINE (shared with watch.html) ────────────────────────────────────
+        const GL = { wK: '♔', wQ: '♕', wR: '♖', wB: '♗', wN: '♘', wP: '♙', bK: '♚', bQ: '♛', bR: '♜', bB: '♝', bN: '♞', bP: '♟' };
+        const PIECE_VAL = { K: 0, Q: 9, R: 5, B: 3, N: 3, P: 1 };
+
+        function sq(f, r) { return String.fromCharCode(97 + f) + (r + 1) }
+        function sqF(s) { return s.charCodeAt(0) - 97 }
+        function sqR(s) { return parseInt(s[1]) - 1 }
+
+        function initBoard() {
+            const b = {}, br = ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'];
+            for (let f = 0; f < 8; f++) { b[sq(f, 0)] = 'w' + br[f]; b[sq(f, 1)] = 'wP'; b[sq(f, 6)] = 'bP'; b[sq(f, 7)] = 'b' + br[f]; }
+            return b;
+        }
+
+        function stripLeadingZeros(h) {
+            if (h && h.slice(0, 2) === '0x') h = h.slice(2);
+            let i = 0; while (i < h.length && h[i] === '0') i++;
+            return { stripped: h.slice(i), startIdx: i };
+        }
+
+        function boardKey(board, turn) { return turn + '|' + Object.entries(board).sort().map(([k, v]) => k + v).join(','); }
+
+        function getTargets(board, from, piece) {
+            const f = sqF(from), r = sqR(from), color = piece[0], type = piece[1], opp = color === 'w' ? 'b' : 'w', tgts = [];
+            function add(ff, rr) { if (ff < 0 || ff > 7 || rr < 0 || rr > 7) return; const s = sq(ff, rr); if (!board[s] || board[s][0] !== color) tgts.push(s); }
+            function slide(dirs) { for (const [df, dr] of dirs) { let ff = f + df, rr = r + dr; while (ff >= 0 && ff < 8 && rr >= 0 && rr < 8) { const s = sq(ff, rr); if (board[s]) { if (board[s][0] !== color) tgts.push(s); break; } tgts.push(s); ff += df; rr += dr; } } }
+            if (type === 'P') { const dir = color === 'w' ? 1 : -1, start = color === 'w' ? 1 : 6, nr = r + dir; if (nr >= 0 && nr < 8) { if (!board[sq(f, nr)]) { tgts.push(sq(f, nr)); if (r === start && !board[sq(f, r + 2 * dir)]) tgts.push(sq(f, r + 2 * dir)); } for (const df of [-1, 1]) { const nf = f + df; if (nf >= 0 && nf < 8) { const s = sq(nf, nr); if (board[s] && board[s][0] === opp) tgts.push(s); } } } }
+            else if (type === 'N') { for (const [df, dr] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]) add(f + df, r + dr); }
+            else if (type === 'B') slide([[-1, -1], [-1, 1], [1, -1], [1, 1]]);
+            else if (type === 'R') slide([[-1, 0], [1, 0], [0, -1], [0, 1]]);
+            else if (type === 'Q') slide([[-1, -1], [-1, 1], [1, -1], [1, 1], [-1, 0], [1, 0], [0, -1], [0, 1]]);
+            else if (type === 'K') { for (const [df, dr] of [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]) add(f + df, r + dr); }
+            return tgts;
+        }
+
+        function applyMove(board, from, to) {
+            const nb = { ...board }; nb[to] = nb[from]; delete nb[from];
+            if (nb[to] === 'wP' && sqR(to) === 7) nb[to] = 'wQ';
+            if (nb[to] === 'bP' && sqR(to) === 0) nb[to] = 'bQ';
+            return nb;
+        }
+
+        function isInCheck(board, color) {
+            const king = Object.entries(board).find(([, p]) => p === color + 'K');
+            if (!king) return true;
+            const ks = king[0], opp = color === 'w' ? 'b' : 'w';
+            for (const [from, piece] of Object.entries(board)) { if (piece && piece[0] === opp && getTargets(board, from, piece).includes(ks)) return true; }
+            return false;
+        }
+
+        function getLegalMoves(board, color) {
+            const moves = [];
+            for (const [from, piece] of Object.entries(board)) {
+                if (!piece || piece[0] !== color) continue;
+                for (const to of getTargets(board, from, piece)) {
+                    const nb = applyMove(board, from, to);
+                    if (!isInCheck(nb, color)) moves.push({ from, to, piece });
+                }
+            }
+            return moves;
+        }
+
+        function pickMove(hash, legal) {
+            if (!legal.length) return null;
+            const { stripped } = stripLeadingZeros(hash);
+            if (stripped.length < 2) return null;
+            const pidx = parseInt(stripped.slice(0, 2), 16) % legal.length;
+            const anchor = legal[pidx];
+            if (!anchor) return legal[0];
+            const byPiece = legal.filter(m => m.from === anchor.from);
+            if (!byPiece.length) return anchor;
+            const dseg = stripped.length >= 4 ? stripped.slice(2, 4) : stripped.slice(0, 2);
+            const didx = parseInt(dseg, 16) % byPiece.length;
+            return byPiece[didx] || anchor;
+        }
+
+        // ── FETCH UTILITIES ──────────────────────────────────────────────────────────
+        function fetchWithTimeout(url, opts, ms) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), ms);
+            return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(timer));
+        }
+
+        const BTC_APIS = ['https://mempool.space/api', 'https://blockstream.info/api'];
+        async function btcApiFetch(path) {
+            for (const base of BTC_APIS) {
+                try { const res = await fetchWithTimeout(`${base}${path}`, {}, 7000); if (res.ok) return res; }
+                catch (e) { console.warn(`BTC API ${base} failed:`, e.message); }
+            }
+            return null;
+        }
+
+        async function fetchBtcLatest() {
+            try {
+                const hr = await btcApiFetch('/blocks/tip/height'); if (!hr) throw new Error('no height');
+                const height = parseInt(await hr.text());
+                const hashR = await btcApiFetch('/blocks/tip/hash'); if (!hashR) throw new Error('no hash');
+                const hash = (await hashR.text()).trim();
+                return { hash, height, url: `https://mempool.space/block/${hash}`, simulated: false };
+            } catch (e) { console.warn('BTC latest:', e.message); return null; }
+        }
+
+        async function fetchBtcByHeight(height) {
+            try {
+                const r = await btcApiFetch(`/block-height/${height}`); if (!r) throw new Error('failed');
+                const blockId = (await r.text()).trim();
+                return { hash: blockId, height, url: `https://mempool.space/block/${blockId}`, simulated: false };
+            } catch (e) { console.warn('BTC by height:', e.message); return null; }
+        }
+
+        const ETH_RPCS = ['https://rpc.ankr.com/eth', 'https://ethereum.publicnode.com', 'https://eth.llamarpc.com', 'https://1rpc.io/eth'];
+        async function ethRpcCall(params) {
+            const body = JSON.stringify({ jsonrpc: '2.0', method: 'eth_getBlockByNumber', params, id: 1 });
+            const opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body };
+            return new Promise(resolve => {
+                let settled = false, failed = 0;
+                ETH_RPCS.forEach(rpc => {
+                    fetchWithTimeout(rpc, opts, 5000)
+                        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+                        .then(d => { if (!d?.result?.hash) throw new Error('no hash'); if (!settled) { settled = true; resolve(d.result); } })
+                        .catch(e => { console.warn(`ETH RPC ${rpc}:`, e.message); if (++failed === ETH_RPCS.length && !settled) { settled = true; resolve(null); } });
+                });
+                setTimeout(() => { if (!settled) { settled = true; resolve(null); } }, 6000);
+            });
+        }
+
+        async function fetchEthLatest() {
+            const r = await ethRpcCall(['latest', false]); if (!r) return null;
+            const height = parseInt(r.number, 16);
+            const raw = r.hash.startsWith('0x') ? r.hash.slice(2) : r.hash;
+            return { hash: raw, height, url: `https://etherscan.io/block/${height}`, simulated: false };
+        }
+
+        function fakeHash(seed) {
+            const n = Math.floor(Math.random() * 6) + 4, c = '0123456789abcdef';
+            let h = '0'.repeat(n), s = seed !== undefined ? seed : Math.floor(Math.random() * 1e9);
+            for (let i = 0; i < 64 - n; i++) { s = (s * 1664525 + 1013904223) & 0xFFFFFFFF; h += c[Math.abs(s) % 16]; }
+            return h;
+        }
+        function makeFallback(seed) { return { hash: fakeHash(seed), height: null, url: null, simulated: true }; }
+
+        function fmtHash(h) {
+            const { stripped, startIdx } = stripLeadingZeros(h);
+            return `<span style="opacity:.25">${h.slice(0, startIdx)}</span><span style="color:var(--btc);font-weight:700">${stripped.slice(0, 10)}</span><span style="opacity:.3">…</span>`;
+        }
+
+        // ── GAME STATE ───────────────────────────────────────────────────────────────
+        let G = {
+            board: null, turn: null, moveCount: 0,
+            halfmoveClock: 0, positionHistory: [],
+            log: [], captures: { you: [], chain: [] },
+            scores: { you: { w: 0, l: 0, d: 0 }, chain: { w: 0, l: 0, d: 0 } },
+            gameNum: 0, startBlock: null,
+            lastFrom: null, lastTo: null,
+            status: 'idle', animating: false,
+            opponent: null,   // 'btc' or 'eth'
+            playerColor: null, // 'w' or 'b' (the color YOU play)
+            selectedSq: null, // currently selected square for player move
+            legalDests: [],   // legal destinations for selected piece
+        };
+
+        const SCORE_KEY = 'bitchess_play_scores';
+        function loadScores() {
+            try { const s = localStorage.getItem(SCORE_KEY); if (s) { const p = JSON.parse(s); if (p.you) G.scores.you = { ...G.scores.you, ...p.you }; if (p.chain) G.scores.chain = { ...G.scores.chain, ...p.chain }; if (p.totalGames) G.gameNum = p.totalGames; } } catch (e) { }
+        }
+        function saveScores() {
+            try { localStorage.setItem(SCORE_KEY, JSON.stringify({ you: G.scores.you, chain: G.scores.chain, totalGames: G.gameNum, lastUpdated: new Date().toISOString() })); } catch (e) { }
+        }
+
+        // ── OPPONENT PICKER ──────────────────────────────────────────────────────────
+        function pickOpponent(chain) {
+            G.opponent = chain;
+            document.getElementById('pick-btc').classList.toggle('selected', chain === 'btc');
+            document.getElementById('pick-eth').classList.toggle('selected', chain === 'eth');
+            document.getElementById('btn-start').disabled = false;
+            updateChainUI();
+        }
+
+        function updateChainUI() {
+            const chain = G.opponent || 'btc';
+            const isBtc = chain === 'btc';
+            // Chain card
+            const card = document.getElementById('card-chain');
+            card.className = `team-card chain-card ${chain}`;
+            document.getElementById('chain-name').textContent = isBtc ? 'Bitcoin' : 'Ethereum';
+            document.getElementById('chain-name').style.color = isBtc ? 'var(--btc)' : 'var(--eth)';
+            const cGlyph = document.getElementById('chain-glyph');
+            cGlyph.textContent = isBtc ? '♔' : '♚';
+            cGlyph.style.color = isBtc ? '#FF8C00' : '#C8D0E8';
+            cGlyph.style.textShadow = isBtc ? '0 0 8px rgba(247,147,26,0.7)' : '0 0 8px rgba(158,168,208,0.7)';
+            document.getElementById('chain-side').textContent = isBtc ? 'orange pieces' : 'silver pieces';
+            document.getElementById('chain-score-color');
+            // Legend
+            document.getElementById('chain-legend-glyph').textContent = isBtc ? '♔' : '♚';
+            document.getElementById('chain-legend-glyph').style.color = isBtc ? '#FF8C00' : '#C8D0E8';
+            document.getElementById('chain-legend-label').textContent = isBtc ? 'Bitcoin (orange)' : 'Ethereum (silver)';
+            // Player glyph — you play the OTHER side
+            // If opponent=btc (white), you play black (silver)
+            // If opponent=eth (black), you play white (orange)
+            // Actually let's keep player as green always for clarity
+        }
+
+        // ── GAME START ───────────────────────────────────────────────────────────────
+        async function startGame() {
+            if (!G.opponent) { setStatus('Please pick an opponent first.'); return; }
+            if (G.animating) return;
+
+            G.board = initBoard(); G.moveCount = 0; G.halfmoveClock = 0; G.positionHistory = [];
+            G.log = []; G.captures = { you: [], chain: [] };
+            G.lastFrom = null; G.lastTo = null; G.selectedSq = null; G.legalDests = [];
+            G.gameNum++; G.status = 'playing';
+
+            document.getElementById('btn-start').textContent = 'New game';
+            document.getElementById('btn-resign').disabled = false;
+            document.getElementById('game-bar').style.display = 'flex';
+            document.getElementById('picker-section').style.display = 'none';
+
+            setStatus('<span style="color:var(--text-dim)">Fetching current block height…</span>');
+            document.getElementById('btn-start').disabled = true;
+
+            const btcTip = await fetchBtcLatest();
+            G.startBlock = btcTip ? btcTip.height : null;
+            document.getElementById('btn-start').disabled = false;
+
+            // Deciding hash determines who goes first
+            const decidingBlock = btcTip || makeFallback(Date.now());
+            const { stripped } = stripLeadingZeros(decidingBlock.hash);
+            const lsc = stripped[stripped.length - 1];
+            const ld = parseInt(lsc, 16);
+            G.turn = ld % 2 === 1 ? 'w' : 'b';
+
+            // Assign player color: if chain=btc, chain plays white, you play black
+            // if chain=eth, chain plays black, you play white
+            G.playerColor = G.opponent === 'btc' ? 'b' : 'w';
+            const chainColor = G.opponent === 'btc' ? 'w' : 'b';
+
+            const first = G.turn === G.playerColor ? 'You go first!' : 'Chain goes first.';
+            setStatus(`<strong>Game ${G.gameNum} started.</strong> ${first} BTC block #${G.startBlock?.toLocaleString() || '?'}<span class="hash-disp">${fmtHash(decidingBlock.hash)}</span>`);
+
+            render();
+            updateTurnBanner();
+
+            // If chain goes first, trigger its move
+            if (G.turn !== G.playerColor) {
+                setTimeout(() => doChainMove(), 800);
+            }
+        }
+
+        // ── PLAYER MOVE (click handling) ─────────────────────────────────────────────
+        function onSquareClick(sqName) {
+            if (G.status !== 'playing' || G.animating) return;
+            if (G.turn !== G.playerColor) return; // not player's turn
+
+            const piece = G.board[sqName];
+
+            // If clicking a legal destination
+            if (G.legalDests.includes(sqName)) {
+                executePlayerMove(G.selectedSq, sqName);
+                return;
+            }
+
+            // If clicking own piece
+            if (piece && piece[0] === G.playerColor) {
+                G.selectedSq = sqName;
+                const allLegal = getLegalMoves(G.board, G.playerColor);
+                G.legalDests = allLegal.filter(m => m.from === sqName).map(m => m.to);
+                renderBoard();
+                return;
+            }
+
+            // Clicking empty or enemy without selection — deselect
+            G.selectedSq = null; G.legalDests = [];
+            renderBoard();
+        }
+
+        function executePlayerMove(from, to) {
+            if (G.animating) return;
+            G.animating = true;
+            G.selectedSq = null; G.legalDests = [];
+
+            _animateMoveInner(from, to, () => {
+                const captured = G.board[to];
+                G.board = applyMove(G.board, from, to);
+                G.lastFrom = from; G.lastTo = to; G.moveCount++;
+                if (captured) G.captures.you.push(captured);
+
+                const isPawn = G.board[to]?.[1] === 'P' || captured?.[1] === 'P';
+                if (captured || isPawn) G.halfmoveClock = 0; else G.halfmoveClock++;
+                const opp = G.playerColor === 'w' ? 'b' : 'w';
+                G.positionHistory.push(boardKey(G.board, opp));
+                const repeatCount = G.positionHistory.filter(k => k === G.positionHistory[G.positionHistory.length - 1]).length;
+
+                const oppCheck = isInCheck(G.board, opp);
+                const oppLegal = getLegalMoves(G.board, opp);
+                const note = oppCheck && !oppLegal.length ? 'checkmate' : !oppCheck && !oppLegal.length ? 'stalemate' : oppCheck ? 'check' : '';
+
+                G.log.push({ who: 'you', hash: null, move: { from, to }, captured, note, num: G.moveCount, skip: false });
+                G.turn = opp;
+                G.animating = false;
+
+                if (note === 'checkmate') { render(); endGame('checkmate', opp); return; }
+                if (note === 'stalemate') { render(); endGame('stalemate', opp); return; }
+                if (G.halfmoveClock >= 150) { render(); endGame('draw-75', null); return; }
+                if (repeatCount >= 3) { render(); endGame('draw-repetition', null); return; }
+
+                const capStr = captured ? ` — captured ${GL[captured]}` : '';
+                const checkStr = oppCheck ? ' <strong style="color:#ff6b6b">Check!</strong>' : '';
+                setStatus(`<strong>You</strong> played <strong>${from}→${to}</strong>${capStr}.${checkStr}`);
+                render();
+                updateTurnBanner();
+
+                // Trigger chain move after short delay
+                setTimeout(() => doChainMove(), 600);
+            });
+        }
+
+        // ── CHAIN MOVE ───────────────────────────────────────────────────────────────
+        async function doChainMove() {
+            if (G.status !== 'playing' || G.animating) return;
+            if (G.turn === G.playerColor) return; // not chain's turn
+
+            G.animating = true;
+            const chainColor = G.turn;
+            const legal = getLegalMoves(G.board, chainColor);
+            if (!legal.length) {
+                G.animating = false;
+                endGame(isInCheck(G.board, chainColor) ? 'checkmate' : 'stalemate', chainColor);
+                return;
+            }
+
+            updateTurnBanner();
+            setStatus(`<span style="color:var(--text-dim)">${G.opponent === 'btc' ? 'Bitcoin' : 'Ethereum'} is thinking… fetching block…</span>`);
+
+            const block = G.opponent === 'btc'
+                ? (await fetchBtcLatest() || makeFallback(Date.now()))
+                : (await fetchEthLatest() || makeFallback(Date.now()));
+
+            const move = pickMove(block.hash, legal);
+            if (!move) {
+                G.log.push({ who: 'chain', hash: block.hash, move: null, captured: null, note: 'block skipped', num: G.moveCount, skip: true });
+                G.animating = false;
+                setStatus(`Block skipped — hash yielded no valid move. Fetching next block…`);
+                setTimeout(() => doChainMove(), 1000);
+                return;
+            }
+
+            _animateMoveInner(move.from, move.to, () => {
+                const captured = G.board[move.to];
+                G.board = applyMove(G.board, move.from, move.to);
+                G.lastFrom = move.from; G.lastTo = move.to; G.moveCount++;
+                if (captured) G.captures.chain.push(captured);
+
+                const isPawn = move.piece[1] === 'P';
+                if (captured || isPawn) G.halfmoveClock = 0; else G.halfmoveClock++;
+                const opp = chainColor === 'w' ? 'b' : 'w';
+                G.positionHistory.push(boardKey(G.board, opp));
+                const repeatCount = G.positionHistory.filter(k => k === G.positionHistory[G.positionHistory.length - 1]).length;
+
+                const oppCheck = isInCheck(G.board, opp);
+                const oppLegal = getLegalMoves(G.board, opp);
+                const note = oppCheck && !oppLegal.length ? 'checkmate' : !oppCheck && !oppLegal.length ? 'stalemate' : oppCheck ? 'check' : '';
+
+                G.log.push({ who: 'chain', hash: block.hash, blockHeight: block.height, explorerUrl: block.url, simulated: block.simulated, move, captured, note, num: G.moveCount, skip: false });
+
+                G.turn = opp;
+                G.animating = false;
+
+                if (note === 'checkmate') { render(); endGame('checkmate', opp); return; }
+                if (note === 'stalemate') { render(); endGame('stalemate', opp); return; }
+                if (G.halfmoveClock >= 150) { render(); endGame('draw-75', null); return; }
+                if (repeatCount >= 3) { render(); endGame('draw-repetition', null); return; }
+
+                const chainLabel = G.opponent === 'btc' ? 'Bitcoin' : 'Ethereum';
+                const capStr = captured ? ` — captured ${GL[captured]}` : '';
+                const checkStr = oppCheck ? ' <strong style="color:#ff6b6b">Check!</strong>' : '';
+                const simNote = block.simulated ? ' <span style="font-size:10px;color:#f87171">[sim]</span>' : '';
+                const hashLink = block.url
+                    ? `<a href="${block.url}" target="_blank" style="color:var(--btc);text-decoration:none">${fmtHash(block.hash)}</a>`
+                    : fmtHash(block.hash);
+                setStatus(`<strong>${chainLabel}</strong> played <strong>${move.from}→${move.to}</strong>${capStr}.${checkStr}${simNote}<span class="hash-disp">${hashLink}</span>`);
+
+                render();
+                updateTurnBanner();
+            });
+        }
+
+        // ── GAME END ─────────────────────────────────────────────────────────────────
+        function endGame(reason, loser) {
+            G.status = 'done';
+            document.getElementById('btn-resign').disabled = true;
+
+            const banner = document.getElementById('game-over-banner');
+            const goResult = document.getElementById('go-result');
+            const goWinner = document.getElementById('go-winner');
+            const goSub = document.getElementById('go-sub');
+
+            if (reason === 'checkmate') {
+                const winner = loser === 'w' ? 'b' : 'w';
+                const youWon = winner === G.playerColor;
+                const winColor = youWon ? 'var(--you)' : G.opponent === 'btc' ? '#FF8C00' : '#C8D0E8';
+                const winLabel = youWon ? 'You win!' : G.opponent === 'btc' ? 'Bitcoin wins' : 'Ethereum wins';
+                const winGlyph = youWon ? '🏆' : G.opponent === 'btc' ? '♔' : '♚';
+                if (youWon) { G.scores.you.w++; G.scores.chain.l++; } else { G.scores.chain.w++; G.scores.you.l++; }
+                goResult.textContent = 'Checkmate'; goResult.style.color = winColor;
+                goWinner.innerHTML = `<span style="color:${winColor}">${winGlyph} ${winLabel}</span>`;
+                goSub.textContent = `Game ${G.gameNum}`;
+                setStatus(`<strong>Checkmate!</strong> ${winLabel} — game ${G.gameNum}.`);
+            } else if (reason === 'stalemate') {
+                G.scores.you.d++; G.scores.chain.d++;
+                const stalematedSide = loser === G.playerColor ? 'You have' : `${G.opponent === 'btc' ? 'Bitcoin' : 'Ethereum'} has`;
+                goResult.textContent = 'Stalemate — Draw'; goResult.style.color = 'var(--text-dim)';
+                goWinner.innerHTML = '<span style="font-size:32px">🤝</span>';
+                goSub.innerHTML = `${stalematedSide} no legal moves but the king is <strong>not in check</strong>.<br>Draw by the rules of chess — game ${G.gameNum}.`;
+                setStatus(`<strong>Stalemate — draw.</strong> ${stalematedSide} no legal moves but the king is not in check. This is a draw by the rules of chess, not a checkmate. Game ${G.gameNum}.`);
+            } else if (reason === 'draw-75') {
+                G.scores.you.d++; G.scores.chain.d++;
+                goResult.textContent = 'Draw'; goResult.style.color = 'var(--text-dim)';
+                goWinner.innerHTML = '<span style="font-size:32px">🤝</span>';
+                goSub.textContent = `75-move rule — game ${G.gameNum}`;
+                setStatus(`<strong>Draw</strong> — 75-move rule. Game ${G.gameNum}.`);
+            } else if (reason === 'draw-repetition') {
+                G.scores.you.d++; G.scores.chain.d++;
+                goResult.textContent = 'Draw'; goResult.style.color = 'var(--text-dim)';
+                goWinner.innerHTML = '<span style="font-size:32px">🔁</span>';
+                goSub.textContent = `Threefold repetition — game ${G.gameNum}`;
+                setStatus(`<strong>Draw</strong> — threefold repetition. Game ${G.gameNum}.`);
+            } else if (reason === 'resigned') {
+                G.scores.chain.w++; G.scores.you.l++;
+                const chainLabel = G.opponent === 'btc' ? 'Bitcoin' : 'Ethereum';
+                goResult.textContent = 'Resigned'; goResult.style.color = 'var(--text-dim)';
+                goWinner.innerHTML = `<span style="color:${G.opponent === 'btc' ? '#FF8C00' : '#C8D0E8'}">⚐ ${chainLabel} wins</span>`;
+                goSub.textContent = `Game ${G.gameNum}`;
+                setStatus(`You resigned. ${chainLabel} wins game ${G.gameNum}.`);
+            }
+
+            banner.classList.add('show');
+            saveScores();
+            render();
+            updateTurnBanner();
+        }
+
+        function resignGame() {
+            if (G.status !== 'playing') return;
+            if (!confirm('Resign this game?')) return;
+            endGame('resigned', G.playerColor);
+        }
+
+        function closeGameOver() { document.getElementById('game-over-banner').classList.remove('show'); }
+        function newGame() {
+            document.getElementById('game-over-banner').classList.remove('show');
+            document.getElementById('picker-section').style.display = 'block';
+            G.status = 'idle'; G.opponent = null;
+            document.getElementById('pick-btc').classList.remove('selected');
+            document.getElementById('pick-eth').classList.remove('selected');
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-start').textContent = 'Start game';
+            document.getElementById('game-bar').style.display = 'none';
+            G.board = null; G.selectedSq = null; G.legalDests = [];
+            updateTurnBanner();
+            render();
+            setStatus('Choose your opponent and press <strong>Start game</strong>.');
+        }
+
+        // ── ANIMATION ────────────────────────────────────────────────────────────────
+        function getSquareEl(sqName) {
+            const f = sqF(sqName), r = sqR(sqName), idx = (7 - r) * 8 + f;
+            const sqs = document.getElementById('board').querySelectorAll('.sq');
+            return sqs[idx] || null;
+        }
+
+        function drawArrow(fromSq, toSq) {
+            const svg = document.getElementById('arrow-overlay');
+            const boardEl = document.getElementById('board');
+            const bw = boardEl.offsetWidth, bh = boardEl.offsetHeight;
+            svg.setAttribute('viewBox', `0 0 ${bw} ${bh}`);
+            svg.innerHTML = '';
+            const sqW = bw / 8, sqH = bh / 8;
+            function center(s) { const f = sqF(s), r = sqR(s); return { x: (f + .5) * sqW, y: ((7 - r) + .5) * sqH }; }
+            const from = center(fromSq), to = center(toSq);
+            const dx = to.x - from.x, dy = to.y - from.y, len = Math.sqrt(dx * dx + dy * dy);
+            const sh = Math.min(len * .15, 14);
+            const ex = to.x - (dx / len) * sh, ey = to.y - (dy / len) * sh;
+            const sw = Math.max(3, bw / 80);
+            svg.innerHTML = `<defs><marker id="ah" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="rgba(255,215,0,0.9)"/></marker></defs>
+    <line x1="${from.x}" y1="${from.y}" x2="${ex}" y2="${ey}" stroke="rgba(255,215,0,0.8)" stroke-width="${sw}" stroke-linecap="round" marker-end="url(#ah)"/>`;
+        }
+
+        function clearArrow() { document.getElementById('arrow-overlay').innerHTML = ''; }
+
+        function _animateMoveInner(fromSq, toSq, callback) {
+            const fromEl = getSquareEl(fromSq), toEl = getSquareEl(toSq);
+            if (!fromEl || !toEl) { callback(); return; }
+            fromEl.classList.add('pre-move-flash'); toEl.classList.add('dest-glow');
+            setTimeout(() => {
+                fromEl.classList.remove('pre-move-flash'); toEl.classList.remove('dest-glow');
+                drawArrow(fromSq, toSq);
+                setTimeout(() => {
+                    clearArrow(); callback();
+                    const toNew = getSquareEl(toSq);
+                    if (toNew) { const p = toNew.querySelector('.piece'); if (p) { p.classList.add('is-moving'); setTimeout(() => p.classList.remove('is-moving'), 350); } }
+                }, 650);
+            }, 620);
+        }
+
+        // ── TURN BANNER ──────────────────────────────────────────────────────────────
+        function updateTurnBanner() {
+            const banner = document.getElementById('turn-banner');
+            const label = document.getElementById('turn-label');
+            const sub = document.getElementById('turn-sub');
+            const icon = document.getElementById('turn-icon');
+            const pill = document.getElementById('turn-pill');
+
+            if (G.status === 'idle') {
+                banner.className = 'turn-banner game-end';
+                label.textContent = 'Pick an opponent above';
+                sub.textContent = 'then press Start game';
+                icon.textContent = '♟';
+                icon.className = 'turn-icon';
+                pill.className = 'pill idle'; pill.textContent = 'not started';
+                return;
+            }
+            if (G.status === 'done') {
+                banner.className = 'turn-banner game-end';
+                label.textContent = 'Game over';
+                sub.textContent = 'Press "New game" to play again';
+                icon.textContent = '🏁';
+                icon.className = 'turn-icon';
+                pill.className = 'pill idle'; pill.textContent = 'game over';
+                return;
+            }
+
+            const isYourTurn = G.turn === G.playerColor;
+            const chainLabel = G.opponent === 'btc' ? 'Bitcoin' : 'Ethereum';
+            const chainClass = G.opponent === 'btc' ? 'btc' : 'eth';
+
+            if (isYourTurn) {
+                banner.className = 'turn-banner your-turn';
+                label.textContent = 'Your turn'; label.style.color = 'var(--you)';
+                sub.textContent = 'Click a piece to select, then click a destination';
+                icon.textContent = '👆'; icon.className = 'turn-icon pulse';
+                pill.className = 'pill you'; pill.textContent = 'your move';
+            } else {
+                banner.className = `turn-banner chain-turn ${chainClass}-turn`;
+                label.textContent = `${chainLabel}'s move`; label.style.color = G.opponent === 'btc' ? 'var(--btc)' : 'var(--eth)';
+                sub.textContent = 'Fetching block hash…';
+                icon.textContent = G.opponent === 'btc' ? '⛏' : '⬡'; icon.className = 'turn-icon pulse';
+                pill.className = `pill ${chainClass}`; pill.textContent = `${chainLabel} thinking`;
+            }
+        }
+
+        // ── RENDER ───────────────────────────────────────────────────────────────────
+        function applyPieceSize() {
+            const b = document.getElementById('board'); if (!b) return;
+            const w = b.getBoundingClientRect().width;
+            const fs = Math.max(12, Math.floor(w / 8 * .75)) + 'px';
+            b.querySelectorAll('.sq').forEach(s => s.style.fontSize = fs);
+        }
+
+        function render() { renderBoard(); renderScores(); renderLog(); }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            const rankEl = document.getElementById('rank-labels');
+            const fileEl = document.getElementById('file-labels');
+            const arrowSvg = document.getElementById('arrow-overlay');
+            boardEl.innerHTML = ''; boardEl.appendChild(arrowSvg);
+            rankEl.innerHTML = ''; fileEl.innerHTML = '';
+
+            for (let r = 7; r >= 0; r--) { const s = document.createElement('span'); s.textContent = r + 1; rankEl.appendChild(s); }
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].forEach(f => { const s = document.createElement('span'); s.textContent = f; fileEl.appendChild(s); });
+
+            for (let r = 7; r >= 0; r--) {
+                for (let f = 0; f < 8; f++) {
+                    const s = sq(f, r);
+                    const div = document.createElement('div');
+                    div.className = 'sq ' + ((f + r) % 2 === 0 ? 'l' : 'd');
+
+                    if (s === G.selectedSq) { div.classList.add('selected'); }
+                    else if (s === G.lastFrom) div.classList.add('from-hl');
+                    else if (s === G.lastTo) div.classList.add('to-hl');
+
+                    // Legal destination dots
+                    if (G.legalDests.includes(s)) {
+                        if (G.board && G.board[s] && G.board[s][0] !== G.playerColor) div.classList.add('legal-capture');
+                        else div.classList.add('legal-move');
+                    }
+
+                    if (G.board && G.board[s]) {
+                        const p = G.board[s];
+                        const span = document.createElement('span');
+                        const isPlayerPiece = p[0] === G.playerColor;
+                        const isChainPiece = !isPlayerPiece;
+                        // Player pieces = green, chain pieces = btc orange or eth silver
+                        let cls = 'piece ';
+                        if (isPlayerPiece) { cls += 'yp'; }
+                        else if (G.opponent === 'btc') { cls += (p[0] === 'w' ? 'wp' : 'bp'); }
+                        else { cls += (p[0] === 'w' ? 'wp' : 'bp'); }
+                        span.className = cls;
+                        span.textContent = GL[p] || '';
+
+                        // Clickable if it's player's turn and player's piece
+                        if (G.status === 'playing' && G.turn === G.playerColor && isPlayerPiece) {
+                            div.classList.add('can-move');
+                            div.onclick = () => onSquareClick(s);
+                        } else if (G.status === 'playing' && G.turn === G.playerColor && G.legalDests.includes(s)) {
+                            div.onclick = () => onSquareClick(s);
+                        } else if (G.status === 'playing' && G.turn === G.playerColor && !isPlayerPiece && G.legalDests.includes(s)) {
+                            div.onclick = () => onSquareClick(s);
+                        }
+                        div.appendChild(span);
+                    } else if (G.status === 'playing' && G.turn === G.playerColor && G.legalDests.includes(s)) {
+                        div.onclick = () => onSquareClick(s);
+                    }
+
+                    // Always allow click on own pieces to select them
+                    if (G.status === 'playing' && G.turn === G.playerColor) {
+                        if (G.board && G.board[s] && G.board[s][0] === G.playerColor) {
+                            div.onclick = () => onSquareClick(s);
+                        } else if (G.legalDests.includes(s)) {
+                            div.onclick = () => onSquareClick(s);
+                        }
+                    }
+
+                    boardEl.appendChild(div);
+                }
+            }
+            setTimeout(applyPieceSize, 0);
+        }
+
+        function renderScores() {
+            const ys = G.scores.you, cs = G.scores.chain;
+            document.getElementById('you-wins').textContent = ys.w;
+            document.getElementById('chain-wins').textContent = cs.w;
+            document.getElementById('you-record').textContent = `${ys.l} loss${ys.l !== 1 ? 'es' : ''} · ${ys.d} draw${ys.d !== 1 ? 's' : ''}`;
+            document.getElementById('chain-record').textContent = `${cs.l} loss${cs.l !== 1 ? 'es' : ''} · ${cs.d} draw${cs.d !== 1 ? 's' : ''}`;
+            document.getElementById('game-num').textContent = `game ${G.gameNum}`;
+
+            // Captured: you captured chain pieces (show in chain color), chain captured your pieces (show in green)
+            const sortCaps = caps => [...caps].sort((a, b) => (PIECE_VAL[b[1]] || 0) - (PIECE_VAL[a[1]] || 0));
+            const chainColor = G.opponent === 'btc' ? '#FF8C00' : '#C8D0E8';
+            const chainShadow = G.opponent === 'btc' ? 'rgba(247,147,26,.7)' : 'rgba(158,168,208,.7)';
+            document.getElementById('you-caps').innerHTML = sortCaps(G.captures.you)
+                .map(p => `<span style="color:${chainColor};text-shadow:0 0 4px ${chainShadow}" title="${GL[p]}">${GL[p]}</span>`).join('');
+            document.getElementById('chain-caps').innerHTML = sortCaps(G.captures.chain)
+                .map(p => `<span style="color:#86EFAC;text-shadow:0 0 4px rgba(74,222,128,.6)" title="${GL[p]}">${GL[p]}</span>`).join('');
+
+            // Active turn card highlight
+            document.getElementById('card-you').classList.toggle('active-turn', G.status === 'playing' && G.turn === G.playerColor);
+            document.getElementById('card-chain').classList.toggle('active-turn', G.status === 'playing' && G.turn !== G.playerColor);
+
+            // Update game bar
+            if (G.startBlock !== null && G.startBlock !== undefined) {
+                document.getElementById('gi-num').textContent = G.gameNum;
+                document.getElementById('gi-block').textContent = G.startBlock.toLocaleString();
+                document.getElementById('gi-move').textContent = G.moveCount;
+            }
+        }
+
+        function renderLog() {
+            const logEl = document.getElementById('move-log');
+            if (!G.log.length) { logEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:3px 8px;font-family:var(--mono)">No moves yet.</div>'; return; }
+            logEl.innerHTML = '';
+            [...G.log].slice(-50).reverse().forEach(e => {
+                const div = document.createElement('div');
+                const cls = e.who === 'you' ? 'you-m' : G.opponent === 'btc' ? 'btc-m' : 'eth-m';
+                const who = e.who === 'you' ? 'You' : (G.opponent === 'btc' ? 'BTC' : 'ETH');
+                if (e.skip) {
+                    div.className = `log-entry skip-m`;
+                    div.innerHTML = `<span class="ln">—</span><span class="lm">${who} skipped</span><span class="lh"></span>`;
+                } else {
+                    div.className = `log-entry ${cls}`;
+                    let hashCell = '';
+                    if (e.explorerUrl) {
+                        const { stripped } = stripLeadingZeros(e.hash || '');
+                        hashCell = `<a href="${e.explorerUrl}" target="_blank" class="lh" style="color:var(--btc);text-decoration:none">#${e.blockHeight?.toLocaleString() || '?'} ${stripped.slice(0, 6)}…</a>`;
+                    }
+                    div.innerHTML = `<span class="ln">${e.num}</span><span class="lm">${who} ${e.move.from}→${e.move.to}${e.captured ? '×' : ''}${e.note ? ' ' + e.note : ''}</span>${hashCell}`;
+                }
+                logEl.appendChild(div);
+            });
+        }
+
+        function setStatus(html) { document.getElementById('status-box').innerHTML = html; }
+
+        document.getElementById('size-slider').addEventListener('input', function () {
+            const v = parseInt(this.value);
+            document.getElementById('size-label').textContent = v + '%';
+            document.getElementById('board-outer').style.width = v + '%';
+            setTimeout(applyPieceSize, 0);
+        });
+
+        if (window.ResizeObserver) { new ResizeObserver(() => applyPieceSize()).observe(document.getElementById('board')); }
+
+        // Init
+        loadScores();
+        updateChainUI();
+        render();
+    </script>
+    <!-- Default Statcounter code for Bitchess
+https://bitchess.vercel.app -->
+    <script type="text/javascript">
+        var sc_project = 13255356;
+        var sc_invisible = 1;
+        var sc_security = "cffe9552";
+    </script>
+    <script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
+    <noscript>
+        <div class="statcounter"><a title="Web Analytics" href="https://statcounter.com/" target="_blank"><img
+                    class="statcounter" src="https://c.statcounter.com/13255356/0/cffe9552/1/" alt="Web Analytics"
+                    referrerPolicy="no-referrer-when-downgrade"></a></div>
+    </noscript>
+    <!-- End of Statcounter Code -->
+</body>
+
+</html>
